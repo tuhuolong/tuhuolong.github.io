@@ -8,14 +8,14 @@ highlighter: pygments
 # Themes are encouraged to use these universal variables 
 # so be sure to set them if your theme uses them.
 #
-title : Tuhuolong
+title : T-Home
 tagline: Site Tagline
 author :
   name : Hao Chen
   email : tuhuolong@gmail.com
   github : tuhuolong
   twitter : tuhuolong
-  feedburner : feedname
+  feedburner : tuhuolong
 
 # The production_url is only used when full-domain names are needed
 # such as sitemap.txt 
