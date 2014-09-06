@@ -2,7 +2,7 @@
 layout: post
 title: "Tuhuolong's First Post"
 description: ""
-category: 
+category: blog
 tags: []
 ---
 {% include JB/setup %}
