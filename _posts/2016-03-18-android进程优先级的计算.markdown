@@ -1,0 +1,124 @@
+---
+layout: post
+title: "android进程优先级的计算"
+date: 2016-03-18 16:06:00 
+comments: true
+categories: []
+tags: []
+description: "android进程优先级的计算"
+keywords: 
+---
+
+
+ 
+  
+   
+  
+  
+   Native进程
+   
+    static final int NATIVE_ADJ = -17;
+   
+  
+  
+   系统进程
+   
+    static final int SYSTEM_ADJ = -16;
+   
+  
+  
+   前台进程
+   
+    static final int FOREGROUND_APP_ADJ = 0;
+   
+  
+  前台页面
+正在执行回调的Receiver
+正在执行回调的Service
+  
+   可见进程
+   
+    static final int VISIBLE_APP_ADJ = 1;
+   
+  
+  绑定前台进程的Service
+  
+   可感知进程
+   
+    static final int PERCEPTIBLE_APP_ADJ = 2;
+   
+  
+  前台Service (foregroundServices)
+  
+   备份进程
+   
+    static final int BACKUP_APP_ADJ = 3;
+   
+  
+  
+   重量级进程
+   
+    static final int HEAVY_WEIGHT_APP_ADJ = 4;
+   
+  
+  
+   服务进程
+   
+    static final int SERVICE_ADJ = 5;
+   
+  
+  
+   Home进程
+   
+    static final int HOME_APP_ADJ = 6;
+   
+  
+  
+   前一个进程
+   
+    static final int PREVIOUS_APP_ADJ = 7;
+   
+  
+  
+   缓存进程
+   
+    static final int CACHED_APP_MIN_ADJ = 9;
+   
+   
+    :
+    
+     缓存进程
+     
+      static final int CACHED_APP_MAX_ADJ = 15;
+     
+    
+   
+  
+  
+   
+    
+     
+    
+   
+  
+  
+   Service进程的优先级还跟绑定方式相关
+  
+  
+   
+  
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

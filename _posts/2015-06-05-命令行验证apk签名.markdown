@@ -1,0 +1,31 @@
+---
+layout: post
+title: "命令行验证apk签名"
+date: 2015-06-05 20:57:00 
+comments: true
+categories: []
+tags: []
+description: "命令行验证apk签名"
+keywords: 
+---
+
+
+ 
+  unzip -p suspect.apk META-INF/CERT.RSA | keytool -printcert
+
+jarsigner -verbose -verify suspect.apk
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

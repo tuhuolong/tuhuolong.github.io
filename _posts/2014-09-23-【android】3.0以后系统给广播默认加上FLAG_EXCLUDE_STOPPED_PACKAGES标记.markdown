@@ -1,0 +1,32 @@
+---
+layout: post
+title: "【android】3.0以后系统给广播默认加上FLAG_EXCLUDE_STOPPED_PACKAGES标记"
+date: 2014-09-23 17:54:00 
+comments: true
+categories: []
+tags: []
+description: "【android】3.0以后系统给广播默认加上FLAG_EXCLUDE_STOPPED_PACKAGES标记"
+keywords: 
+---
+
+
+ 
+ 
+ 
+  
+   // By default broadcasts do not go to stopped apps.
+  
+ 
+ 
+  
+   intent.addFlags(Intent.
+   
+    FLAG_EXCLUDE_STOPPED_PACKAGES
+   
+   );
+  
+ 
+ 
+ 
+
+

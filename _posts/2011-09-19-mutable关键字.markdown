@@ -1,0 +1,24 @@
+---
+layout: post
+title: "mutable关键字"
+date: 2011-09-19 10:59:00 
+comments: true
+categories: []
+tags: []
+description: "mutable关键字"
+keywords: 
+---
+
+
+ 
+  
+   相对于const
+  
+ 
+ 
+  
+   如果类的成员函数不会改变对象的状态，那么这个成员函数一般会声明成const的。但是，有些时候，我们需要在const的函数里面修改一些跟类状态无关的数据成员，那么这个数据成员就应该被mutalbe来修饰
+  
+ 
+
+

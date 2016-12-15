@@ -1,0 +1,43 @@
+---
+layout: post
+title: "hprof文件中导出图片"
+date: 2016-08-22 14:51:00 
+comments: true
+categories: []
+tags: []
+description: "hprof文件中导出图片"
+keywords: 
+---
+
+
+ 
+  
+   导出.data文件
+   
+    
+   
+  
+  
+   查看宽高
+   
+    
+   
+  
+  
+   使用GIMP打开
+  
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

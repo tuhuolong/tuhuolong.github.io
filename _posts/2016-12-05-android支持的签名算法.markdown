@@ -1,0 +1,38 @@
+---
+layout: post
+title: "android支持的签名算法"
+date: 2016-12-05 11:49:00 
+comments: true
+categories: []
+tags: []
+description: "android支持的签名算法"
+keywords: 
+---
+
+
+ 
+  SHA-512
+SHA-384
+SHA-256
+SHA1
+  DSA
+RSA
+ECDSA
+  
+   自签名:证书 所有者==签名者
+  
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

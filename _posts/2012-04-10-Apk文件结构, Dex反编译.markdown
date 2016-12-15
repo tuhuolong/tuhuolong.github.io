@@ -1,0 +1,589 @@
+---
+layout: post
+title: "Apk文件结构, Dex反编译"
+date: 2012-04-10 10:12:00 
+comments: true
+categories: [反编译工具]
+tags: [反编译工具]
+description: "Apk文件结构, Dex反编译"
+keywords: 反编译工具
+---
+
+
+ 
+  android 系统最常见的莫过就似乎apk文件了，这就是android的安装文件
+  
+   下面简单说说这个apk的文件格式吧，转载了下别人的说明：
+   
+    Apk文件：
+    
+     Android application package文件。每个要安装到OPhone平台的应用都要被编译打包为一个单独的文件，后缀名为.apk，其中包含了应用的二进制代码、资源、配置文件等。
+     
+      apk文件实际是一个zip压缩包，可以通过解压缩工具解开。可以用zip解开*.apk文件，下面是一个helloword的apk示例文件
+      
+       |– AndroidManifest.xml
+       
+        |– META-INF
+        
+         |   |– CERT.RSA
+         
+          |   |– CERT.SF
+          
+           |   `– MANIFEST.MF
+           
+            |– classes.dex
+            
+             |– res
+             
+              |   |– drawable
+              
+               |   |   `– icon.png
+               
+                |   `– layout
+                
+                 |       `– main.xml
+                 
+                  `– resources.arsc
+                  
+                   Manifest文件
+                   
+                    AndroidManifest.xml是每个应用都必须定义和包含的，它描述了应用的名字、版本、权限、引用的库文件等等信息[ , ]，如要把apk上传到 Google Market上，也要对这个xml做一些配置。网上已有很多资料，在此就不多做介绍了。
+                    
+                     在apk中的AndroidManifest.xml是经过压缩的，可以通过AXMLPrinter2工具[ , ]解开，具体命令为：
+                     
+                      java -jar AXMLPrinter2.jar AndroidManifest.xml
+                      
+                       3.2 META-INF目录
+                       
+                        META-INF目录下存放的是签名信息，用来保证apk包的完整性和系统的安全。在eclipse编译生成一个 api包时，会对所有要打包的文件做一个校验计算，并把计算结果放在META-INF目录下。而在OPhone平台上安装apk包时，应用管理器会按照同样的算法对包里的文件做校验，如果校验结果与META-INF下的内容不一致，系统就不会安装这个apk。这就保证了apk包里的文件不能被随意替换。比如拿到一个apk包后，如果想要替换里面的一幅图片，一段代码， 或一段版权信息，想直接解压缩、替换再重新打包，基本是不可能的。如此一来就给病毒感染和恶意修改增加了难度，有助于保护系
+ 统的安全。
+                        
+                         
+                          3.3 classes.dex文件
+                          
+                           classes.dex是java源码编译后生成的java字节码文件。但由于Android使用的dalvik虚拟机与标准的java虚拟机是不兼容的，dex文件与class文件相比，不论是文件结构还是opcode都不一样。目前常见的java反编译工具都不能处理dex文件。
+                           
+                            Android模拟器中提供了一个dex文件的反编译工具，dexdump。用法为首先启动Android模拟器，把要查看的dex文件用adb push上传的模拟器中，然后通过adb shell登录，找到要查看的dex文件，执行dexdump xxx.dex。
+                            
+                             仍然以hello world程序作为演示。
+                             
+                              
+                               view plaincopy to clipboardprint?
+                               
+                                # dexdump classes.dex
+                                
+                                 Processing ‘classes.dex’…
+                                 
+                                  Opened ‘classes.dex’, DEX version ‘035′
+                                  
+                                   Class #0            -
+                                   
+                                    Class descriptor  : ‘Lhello/world/R$attr;’
+                                    
+                                     …
+                                     
+                                      Class #5            -
+                                      
+                                       Class descriptor  : ‘Lhello/world/hello;’
+                                       
+                                        Access flags      : 0×0001 (PUBLIC)
+                                        
+                                         Superclass        : ‘Landroid/app/Activity;’
+                                         
+                                          Interfaces        -
+                                          
+                                           Static fields     -
+                                           
+                                            Instance fields   -
+                                            
+                                             Direct methods    -
+                                             
+                                              #0              : (in Lhello/world/hello;)
+                                              
+                                               name          : ‘<init>;’
+                                               
+                                                type          : ‘()V’
+                                                
+                                                 access        : 0×10001 (PUBLIC CONSTRUCTOR)
+                                                 
+                                                  code          -
+                                                  
+                                                   registers     : 1
+                                                   
+                                                    ins           : 1
+                                                    
+                                                     outs          : 1
+                                                     
+                                                      insns size    : 4 16-bit code units
+                                                      
+                                                       catches       : (none)
+                                                       
+                                                        positions     :
+                                                        
+                                                         0×0000 line=7
+                                                         
+                                                          locals        :
+                                                          
+                                                           0×0000 - 0×0004 reg=0 this Lhello/world/hello;
+                                                           
+                                                            Virtual methods   -
+                                                            
+                                                             #0              : (in Lhello/world/hello;)
+                                                             
+                                                              name          : ‘onCreate’
+                                                              
+                                                               type          : ‘(Landroid/os/Bundle;)V’
+                                                               
+                                                                access        : 0×0001 (PUBLIC)
+                                                                
+                                                                 code          -
+                                                                 
+                                                                  registers     : 4
+                                                                  
+                                                                   ins           : 2
+                                                                   
+                                                                    outs          : 2
+                                                                    
+                                                                     insns size    : 17 16-bit code units
+                                                                     
+                                                                      catches       : (none)
+                                                                      
+                                                                       positions     :
+                                                                       
+                                                                        0×0000 line=11
+                                                                        
+                                                                         0×0003 line=13
+                                                                         
+                                                                          0×0008 line=14
+                                                                          
+                                                                           0×000d line=15
+                                                                           
+                                                                            0×0010 line=16
+                                                                            
+                                                                             locals        :
+                                                                             
+                                                                              0×0008 - 0×0011 reg=0 test Landroid/widget/TextView;
+                                                                              
+                                                                               0×0000 - 0×0011 reg=2 this Lhello/world/hello;
+                                                                               
+                                                                                0×0000 - 0×0011 reg=3 savedInstanceState Landroid/os/Bundle;
+                                                                                
+                                                                                 source_file_idx   : 27 (hello.java)
+                                                                                 
+                                                                                  # dexdump classes.dex Processing 'classes.dex'... Opened 'classes.dex', DEX version '035' Class #0 - Class descriptor : 'Lhello/world/R$attr;' … Class #5 - Class descriptor : 'Lhello/world/hello;' Access flags : 0x0001 (PUBLIC) Superclass : 'Landroid/app/Activity;'
+ Interfaces - Static fields - Instance fields - Direct methods - #0 : (in Lhello/world/hello;) name : '<init>;' type : '()V' access : 0x10001 (PUBLIC CONSTRUCTOR) code - registers : 1 ins : 1 outs : 1 insns size : 4 16-bit code units catches : (none) positions
+ : 0x0000 line=7 locals : 0x0000 - 0x0004 reg=0 this Lhello/world/hello; Virtual methods - #0 : (in Lhello/world/hello;) name : 'onCreate' type : '(Landroid/os/Bundle;)V' access : 0x0001 (PUBLIC) code - registers : 4 ins : 2 outs : 2 insns size : 17 16-bit
+ code units catches : (none) positions : 0x0000 line=11 0x0003 line=13 0x0008 line=14 0x000d line=15 0x0010 line=16 locals : 0x0008 - 0x0011 reg=0 test Landroid/widget/TextView; 0x0000 - 0x0011 reg=2 this Lhello/world/hello; 0x0000 - 0x0011 reg=3 savedInstanceState
+ Landroid/os/Bundle; source_file_idx : 27 (hello.java)
+                                                                                  
+                                                                                   Dexdump的结果可以看到有class0到class5六个class，跟工程目录下bin目录中的class数目相对应，可以想象 dex文件包含了所有的class文件。但对hello.java的反编译结果（Class #5）中很难发现我们做的修改，即如何输出“hello, OPhone”。分支跳转表的反编译不完整，严格来说就没有完整的dump出来。fill- array-data表也存在同样的问题。还有其他很多限制。总的来说dexdump反编的结果可读性很差。
+                                                                                   
+                                                                                    目前在网上能找到的另一个dex文件的反编译工具是Dedexer。Dedexer可以读取dex格式的文件，生成一种类似于汇编语言的输出。这种输出与jasmin[ ]的输出相似，但包含的是Dalvik的字节码。我们会在下一节详细介绍一下Dedexer。
+                                                                                    
+                                                                                     
+                                                                                      3.4 res目录
+                                                                                      
+                                                                                       res目录存放资源文件。关于apk文件中的资源管理，OPhone SDN网站上已经有文章做过详细介绍[ ]，就不在此敷述。
+                                                                                       
+                                                                                        
+                                                                                         3.5 resources.arsc
+                                                                                         
+                                                                                          编译后的二进制资源文件。
+                                                                                          
+                                                                                           
+                                                                                            四．反编译工具Dedexer
+                                                                                            
+                                                                                             Dedexer是目前在网上能找到的唯一一个反编译dex文件的开源工具[ ]。Dedexer下载后需要编译才能使用。如果你用过ant编译java程序，那么编译Dedexer是一件非常简单的工作。注意目前Dedexer的最新版本是1.5，只能使用junit4.5编译。下面以linux环境为例，讲一下Dedexer的编译使用过程。
+                                                                                             
+                                                                                              下载ddx1.5.zip后，解压缩会产生一个dedexer目录，其中包含build.xml文件。我们需要根据本机的环境配置build.xml的内容，注意下面的粗体部分是我本机的配置。
+                                                                                              
+                                                                                               
+                                                                                                view plaincopy to clipboardprint?
+                                                                                                
+                                                                                                 <!– Directories of the project –>;
+                                                                                                 
+                                                                                                  <property name=“home” value=“/home/danny/myproject/dedex/dedexer”/>;
+                                                                                                  
+                                                                                                   <property name=“junit-home” value=“/home/danny/myproject/dedex”/>;
+                                                                                                   
+                                                                                                    <!– Directories derived from the source tree root –>;
+                                                                                                    
+                                                                                                     <property name=“classdir” value=“${home}/classes”/>;
+                                                                                                     
+                                                                                                      <property name=“src” value=“${home}/sources”/>;
+                                                                                                      
+                                                                                                       <property name=“testbase” value=“${home}/testfiles”/>;
+                                                                                                       
+                                                                                                        <!– Directories derived from the JUnit base –>;
+                                                                                                        
+                                                                                                         <property name=“junit_jar” value=“${junit-home}/junit-4.5.jar”/>;
+                                                                                                         
+                                                                                                          <!-- Directories of the project -->; <property name="home" value="/home/danny/myproject/dedex/dedexer"/>; <property name="junit-home" value="/home/danny/myproject/dedex"/>; <!-- Directories derived from the source tree root -->; <property name="classdir" value="${home}/classes"/>;
+ <property name="src" value="${home}/sources"/>; <property name="testbase" value="${home}/testfiles"/>; <!-- Directories derived from the JUnit base -->; <property name="junit_jar" value="${junit-home}/junit-4.5.jar"/>;
+                                                                                                          
+                                                                                                           环境配置好之后可以开始编译了。当然要保证你已经安装好了ant编译工具。执行ant。
+                                                                                                           
+                                                                                                            
+                                                                                                             view plaincopy to clipboardprint?
+                                                                                                             
+                                                                                                              
+                                                                                                               danny@danny-desktop:~/myproject/dedex$
+                                                                                                              
+                                                                                                              ant
+                                                                                                              
+                                                                                                               Buildfile: build.xml
+                                                                                                               
+                                                                                                                init:
+                                                                                                                
+                                                                                                                 [mkdir] Created dir: /home/danny/myproject/dedex/dedexer/classes
+                                                                                                                 
+                                                                                                                  compile:
+                                                                                                                  
+                                                                                                                   [javac] Compiling 48 source files to /home/danny/myproject/dedex/dedexer/classes
+                                                                                                                   
+                                                                                                                    [javac] Note: /home/danny/myproject/dedex/dedexer/sources/hu/uw/pallergabor/dedexer/Annotation.java uses unchecked or unsafe operations.
+                                                                                                                    
+                                                                                                                     [javac] Note: Recompile with -Xlint:unchecked for details.
+                                                                                                                     
+                                                                                                                      package:
+                                                                                                                      
+                                                                                                                       [jar] Building jar: /home/danny/myproject/dedex/dedexer/ddx.jar
+                                                                                                                       
+                                                                                                                        
+                                                                                                                         BUILD SUCCESSFUL
+                                                                                                                         
+                                                                                                                          Total time: 3 seconds
+                                                                                                                          
+                                                                                                                           
+                                                                                                                            danny@danny-desktop:~/myproject/dedex$
+                                                                                                                           
+                                                                                                                           ant Buildfile: build.xml init: [mkdir] Created dir: /home/danny/myproject/dedex/dedexer/classes
+ compile: [javac] Compiling 48 source files to /home/danny/myproject/dedex/dedexer/classes [javac] Note: /home/danny/myproject/dedex/dedexer/sources/hu/uw/pallergabor/dedexer/Annotation.java uses unchecked or unsafe operations. [javac] Note: Recompile with
+ -Xlint:unchecked for details. package: [jar] Building jar: /home/danny/myproject/dedex/dedexer/ddx.jar BUILD SUCCESSFUL Total time: 3 seconds
+                                                                                                                           
+                                                                                                                            好了，编译dedexer成功，只用了3秒种，生成了ddx.jar文件。我习惯修改一下它的文件名，加上版本号。用来反编译的命令如下：
+                                                                                                                            
+                                                                                                                             
+                                                                                                                              view plaincopy to clipboardprint?
+                                                                                                                              
+                                                                                                                               
+                                                                                                                                danny@danny-desktop:~/myproject/dedex$
+                                                                                                                               
+                                                                                                                               java -jar ddx1.5.jar -d [target folder] classes.dex
+                                                                                                                               
+                                                                                                                                Processing hello/world/R$string
+                                                                                                                                
+                                                                                                                                 Processing hello/world/R$layout
+                                                                                                                                 
+                                                                                                                                  Processing hello/world/hello
+                                                                                                                                  
+                                                                                                                                   Processing hello/world/R$attr
+                                                                                                                                   
+                                                                                                                                    Processing hello/world/R
+                                                                                                                                    
+                                                                                                                                     Processing hello/world/R$drawable
+                                                                                                                                     
+                                                                                                                                      
+                                                                                                                                       danny@danny-desktop:~/myproject/dedex$
+                                                                                                                                      
+                                                                                                                                      java -jar ddx1.5.jar -d [target folder] classes.dex Processing hello/world/R$string Processing
+ hello/world/R$layout Processing hello/world/hello Processing hello/world/R$attr Processing hello/world/R Processing hello/world/R$drawable
+                                                                                                                                      
+                                                                                                                                       dedexer为每个class文件生成了一个后缀为ddx的文件。不出所料，有6个ddx文件。
+                                                                                                                                       
+                                                                                                                                        
+                                                                                                                                         view plaincopy to clipboardprint?
+                                                                                                                                         
+                                                                                                                                          
+                                                                                                                                           danny@danny-desktop:~/myproject/dedex$
+                                                                                                                                          
+                                                                                                                                          ls hello/world/
+                                                                                                                                          
+                                                                                                                                           R$attr.ddx R.ddx R$drawable.ddx R$layout.ddx R$string.ddx hello.ddx
+                                                                                                                                           
+                                                                                                                                            
+                                                                                                                                             danny@danny-desktop:~/myproject/dedex$
+                                                                                                                                            
+                                                                                                                                            ls hello/world/ R$attr.ddx R.ddx R$drawable.ddx R$layout.ddx R$string.ddx hello.ddx
+                                                                                                                                            
+                                                                                                                                             看一下我们所关心的hello.ddx的内容。
+                                                                                                                                             
+                                                                                                                                              
+                                                                                                                                               view plaincopy to clipboardprint?
+                                                                                                                                               
+                                                                                                                                                class public hello/world/hello
+                                                                                                                                                
+                                                                                                                                                 .super android/app/Activity
+                                                                                                                                                 
+                                                                                                                                                  .source hello.java
+                                                                                                                                                  
+                                                                                                                                                   
+                                                                                                                                                    .method public <init>;()V
+                                                                                                                                                    
+                                                                                                                                                     .line 7
+                                                                                                                                                     
+                                                                                                                                                      invoke-direct   {v0},android/app/Activity/<init>;        ; <init>;()V
+                                                                                                                                                      
+                                                                                                                                                       return-void
+                                                                                                                                                       
+                                                                                                                                                        .end method
+                                                                                                                                                        
+                                                                                                                                                         
+                                                                                                                                                          .method public onCreate(Landroid/os/Bundle;)V
+                                                                                                                                                          
+                                                                                                                                                           .line 11
+                                                                                                                                                           
+                                                                                                                                                            invoke-super    {v2,v3},android/app/Activity/onCreate   ; onCreate(Landroid/os/Bundle;)V
+                                                                                                                                                            
+                                                                                                                                                             .line 13
+                                                                                                                                                             
+                                                                                                                                                              new-instance    v0,android/widget/TextView
+                                                                                                                                                              
+                                                                                                                                                               invoke-direct   {v0,v2},android/widget/TextView/<init>;  ; <init>;(Landroid/content/Context;)V
+                                                                                                                                                               
+                                                                                                                                                                .line 14
+                                                                                                                                                                
+                                                                                                                                                                 const-string    v1,“hello, OPhone”
+                                                                                                                                                                 
+                                                                                                                                                                  invoke-virtual  {v0,v1},android/widget/TextView/setText ; setText(Ljava/lang/CharSequence;)V
+                                                                                                                                                                  
+                                                                                                                                                                   .line 15
+                                                                                                                                                                   
+                                                                                                                                                                    invoke-virtual  {v2,v0},hello/world/hello/setContentView        ; setContentView(Landroid/view/View;)V
+                                                                                                                                                                    
+                                                                                                                                                                     .line 16
+                                                                                                                                                                     
+                                                                                                                                                                      return-void
+                                                                                                                                                                      
+                                                                                                                                                                       .end method
+                                                                                                                                                                       
+                                                                                                                                                                        class public hello/world/hello .super android/app/Activity .source hello.java .method public <init>;()V .line 7 invoke-direct {v0},android/app/Activity/<init>; ; <init>;()V return-void .end method .method public onCreate(Landroid/os/Bundle;)V .line 11 invoke-super
+ {v2,v3},android/app/Activity/onCreate ; onCreate(Landroid/os/Bundle;)V .line 13 new-instance v0,android/widget/TextView invoke-direct {v0,v2},android/widget/TextView/<init>; ; <init>;(Landroid/content/Context;)V .line 14 const-string v1,"hello, OPhone" invoke-virtual
+ {v0,v1},android/widget/TextView/setText ; setText(Ljava/lang/CharSequence;)V .line 15 invoke-virtual {v2,v0},hello/world/hello/setContentView ; setContentView(Landroid/view/View;)V .line 16 return-void .end method
+                                                                                                                                                                       
+                                                                                                                                                                      
+                                                                                                                                                                     
+                                                                                                                                                                    
+                                                                                                                                                                   
+                                                                                                                                                                  
+                                                                                                                                                                 
+                                                                                                                                                                
+                                                                                                                                                               
+                                                                                                                                                              
+                                                                                                                                                             
+                                                                                                                                                            
+                                                                                                                                                           
+                                                                                                                                                          
+                                                                                                                                                         
+                                                                                                                                                        
+                                                                                                                                                       
+                                                                                                                                                      
+                                                                                                                                                     
+                                                                                                                                                    
+                                                                                                                                                   
+                                                                                                                                                  
+                                                                                                                                                 
+                                                                                                                                                
+                                                                                                                                               
+                                                                                                                                              
+                                                                                                                                             
+                                                                                                                                            
+                                                                                                                                           
+                                                                                                                                          
+                                                                                                                                         
+                                                                                                                                        
+                                                                                                                                       
+                                                                                                                                      
+                                                                                                                                     
+                                                                                                                                    
+                                                                                                                                   
+                                                                                                                                  
+                                                                                                                                 
+                                                                                                                                
+                                                                                                                               
+                                                                                                                              
+                                                                                                                             
+                                                                                                                            
+                                                                                                                           
+                                                                                                                          
+                                                                                                                         
+                                                                                                                        
+                                                                                                                       
+                                                                                                                      
+                                                                                                                     
+                                                                                                                    
+                                                                                                                   
+                                                                                                                  
+                                                                                                                 
+                                                                                                                
+                                                                                                               
+                                                                                                              
+                                                                                                             
+                                                                                                            
+                                                                                                           
+                                                                                                          
+                                                                                                         
+                                                                                                        
+                                                                                                       
+                                                                                                      
+                                                                                                     
+                                                                                                    
+                                                                                                   
+                                                                                                  
+                                                                                                 
+                                                                                                
+                                                                                               
+                                                                                              
+                                                                                             
+                                                                                            
+                                                                                           
+                                                                                          
+                                                                                         
+                                                                                        
+                                                                                       
+                                                                                      
+                                                                                     
+                                                                                    
+                                                                                   
+                                                                                  
+                                                                                 
+                                                                                
+                                                                               
+                                                                              
+                                                                             
+                                                                            
+                                                                           
+                                                                          
+                                                                         
+                                                                        
+                                                                       
+                                                                      
+                                                                     
+                                                                    
+                                                                   
+                                                                  
+                                                                 
+                                                                
+                                                               
+                                                              
+                                                             
+                                                            
+                                                           
+                                                          
+                                                         
+                                                        
+                                                       
+                                                      
+                                                     
+                                                    
+                                                   
+                                                  
+                                                 
+                                                
+                                               
+                                              
+                                             
+                                            
+                                           
+                                          
+                                         
+                                        
+                                       
+                                      
+                                     
+                                    
+                                   
+                                  
+                                 
+                                
+                               
+                              
+                             
+                            
+                           
+                          
+                         
+                        
+                       
+                      
+                     
+                    
+                   
+                  
+                 
+                
+               
+              
+             
+            
+           
+          
+         
+        
+       
+      
+     
+    
+   
+  
+ 
+ 
+  从反编译的结果来看，代码的可读性仍然比较差，但比dexdump相比要好一些。我们能够看到“hello, OPhone”字符串是通过invoke-virtual {v0, v1}, android/widget/TextView/setText调用的。
+  
+   dedexer与dexdump相比至少有3个优点。一，不需要在android模拟器中运行。二，把dex文件按照java源代码package的目录结构建好了目录，每个class文件对应一个ddx文件。不像dexdump那样把所有的结果都放在一起。三，按照Dedexer作者的说法，可以把 Dedexer作为一个像jasmin那样的反编译引擎，目前好多强大的java反编译工具都是以jasmin作为反编译引擎的。
+   
+    
+     参考文献
+     
+      
+       http://www.ophonesdn.com/article/show/20
+      
+      
+       
+        
+         http://developer.android.com/guide/appendix/glossary.html
+        
+        
+         
+          
+           http://forum.xda-developers.com/showthread.php?t=514412
+          
+          
+           
+            
+             http://code.google.com/p/android4me/downloads/list
+            
+            
+             
+              
+               http://jasmin.sourceforge.net/
+              
+              
+               
+                
+                 http://www.ophonesdn.com/article/show/18
+                
+                
+                 
+                  
+                   http://dedexer.sourceforge.net/
+                  
+                 
+                
+               
+              
+             
+            
+           
+          
+         
+        
+       
+      
+     
+    
+   
+  
+ 
+
+

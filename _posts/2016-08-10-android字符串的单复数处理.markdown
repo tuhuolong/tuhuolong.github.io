@@ -1,0 +1,60 @@
+---
+layout: post
+title: "android字符串的单复数处理"
+date: 2016-08-10 19:04:00 
+comments: true
+categories: []
+tags: []
+description: "android字符串的单复数处理"
+keywords: 
+---
+
+
+ 
+  String str = getResources().getQuantityString(R.plurals.xxxxxx, quantity, value);
+  <plurals name="xxxxxx">;
+    <item quantity="zero">;</item>;
+    <item quantity="one">;</item>;
+    <item quantity="two">;</item>;
+    <item quantity="few">;</item>;
+    <item quantity="many">;</item>;
+    <item quantity="other">;</item>;
+</plurals>;
+  
+   quantity值
+  
+  
+   
+  
+  
+   
+  
+  
+   每一种语言的具体定义
+   
+    
+     language_plural_rules
+    
+   
+  
+  
+   
+  
+  
+   external/icu/icu4c/source/data/misc/plurals.txt
+  
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

@@ -1,0 +1,1019 @@
+---
+layout: post
+title: "Android 编译系统分析(三)"
+date: 2012-05-15 16:22:00 
+comments: true
+categories: [android]
+tags: [android]
+description: "Android 编译系统分析(三)"
+keywords: android
+---
+
+
+ 
+  自
+  
+   Android
+  
+  开源以来，引起了嵌入式行业一股热潮，很多嵌入式开发者表示对
+  
+   Android
+  
+  有很强的兴趣，并下载
+  
+   Android
+  
+  源码进行编译和移植。
+  
+   Android
+  
+  源码的巨大（
+  
+   repo
+  
+  下来，大概
+  
+   2G
+  
+  ）给人以
+  
+   Android
+  
+  相当复杂的错觉。本文从
+  
+   Android
+  
+  编译系统的角度，让大家了解
+  
+   Android
+  
+  其实也是很纯真的。
+  
+  
+ 
+ 
+  
+   Android
+  
+  编译系统（
+  
+   build system
+  
+  ）集中于
+  
+   Android
+  
+  源码下的
+  
+   build/core
+  
+  下，在
+  
+   Android2.2
+  
+  中，共有
+  
+   56
+  
+  个
+  
+   *.mk
+  
+  文件。另外还有一些
+  
+   shell
+  
+  脚本。可谓相当庞大，为什么
+  
+   google
+  
+  将它的编译系统弄的如此复杂庞大呢？在
+  
+   build/core
+  
+  下的
+  
+   build-system.html
+  
+  中有以下讲述：
+  
+  
+ 
+ 
+  
+   1.     Multiple Targets
+  
+ 
+ 
+  
+   2.     Non-Recursive Make
+  
+ 
+ 
+  
+   3.     Rapid Compile-Test Cycles
+  
+ 
+ 
+  
+   4.     Both Environment and Config File Based Settings
+  
+ 
+ 
+  
+   5.     Object File Directory / make clean
+  
+ 
+ 
+  基于以上目标，
+  
+   google Android
+  
+  开发人员将
+  
+   Android build system
+  
+  做成了现在的样子。在
+  
+   android.git.kernel.org
+  
+  上可以看到
+  
+   android build system
+  
+  作为一个项目一直在更新，因此，对于其编译系统的维护也是一个相当复杂的项目。为了实现
+  
+   Android
+  
+  在除
+  
+   ARM
+  
+  平台（
+  
+   x86
+  
+  、
+  
+   mips
+  
+  甚至一个全新的架构）上移植，必须深入了解
+  
+   Android
+  
+  编译系统。
+  
+  
+ 
+ 
+  
+   
+    
+     Makefile
+    
+   
+   的规则：
+  
+  
+  
+ 
+ 
+  
+   target … : prerequisites …
+  
+ 
+ 
+  
+   command
+  
+ 
+ 
+  
+   …
+  
+ 
+ 
+  
+   …
+  
+ 
+ 
+  
+   target
+  
+  也就是一个目标文件，可以是
+  
+   Object File
+  
+  ，也可以是执行文件。还可以是一个标签（
+  
+   Label
+  
+  ），对于标签这种特性，在后续的
+  
+   “
+  
+  伪目标
+  
+   ”
+  
+  章节中会有叙述。
+  
+  
+ 
+ 
+  
+   prerequisites
+  
+  就是，要生成那个
+  
+   target
+  
+  所需要的文件或是目标。
+  
+  
+ 
+ 
+  
+   command
+  
+  也就是
+  
+   make
+  
+  需要执行的命令。（任意的
+  
+   Shell
+  
+  命令）
+  
+  
+ 
+ 
+  这是一个文件的依赖关 系，也就是说，
+  
+   target
+  
+  这一个或多个的 目标文件依赖于
+  
+   prerequisites
+  
+  中的文件，其生成规则定义在
+  
+   command
+  
+  中。 说白一点就是说，
+  
+   prerequisites
+  
+  中如果有一个以上的文件比
+  
+   target
+  
+  文件要新的话，
+  
+   command
+  
+  所定义的命令就会被执行。这就是
+  
+  
+  
+   
+    Makefile
+   
+  
+  的规则。也就是
+  
+   
+    Makefile
+   
+  
+  中最核心的内容。
+  
+  
+ 
+ 
+  正如上面作者所述，上面是
+  
+   
+    Makefile
+   
+  
+  中最核心的内容，
+  
+   Android
+  
+  编译系统符合
+  
+   GNU make
+  
+  的标准，当然这也是
+  
+   Android
+  
+  编译系统最核心的内容。
+  
+  
+ 
+ 
+  
+   
+    Android
+   
+   编译系统的架构：
+  
+  
+  
+ 
+ 
+  分析
+  
+   Android
+  
+  编译系统，你会发现，
+  
+   Android
+  
+  编译系统完成的并不仅仅是对目标（主机）系统二进制文件、
+  
+   java
+  
+  应用程序的编译、链接、打包等，而且还有包括生成各种依赖关系、确保某个模块的修改引起相依赖的文件的重新编译链接，甚至还包括目标文件系统的生成，配置文件的生成等，因此
+  
+   Android
+  
+  编译系统具有支持多架构（
+  
+   linux-x86
+  
+  、
+  
+   windows
+  
+  、
+  
+   arm
+  
+  等）、多语言（汇编、
+  
+   C
+  
+  、
+  
+   C++
+  
+  、
+  
+   Java
+  
+  等）、多目标、多编译方式。这些目标和结构决定其架构也很重要。
+  
+  
+ 
+ 
+  
+   Android
+  
+  编译系统集中于
+  
+   build/core
+  
+  下，几个很重要的
+  
+   *.mk
+  
+  文件如下：
+  
+  
+ 
+ 
+  
+   main.mk(
+  
+  主控
+  
+   
+    Makefile
+   
+   )
+  
+ 
+ 
+  
+   base_rules.mk(
+  
+  对一些
+  
+   
+    Makefile
+   
+  
+  的变量规则化
+  
+   )
+  
+ 
+ 
+  
+   config.mk
+  
+  （关于编译参数、编译命令的一些配置）
+  
+  
+ 
+ 
+  
+   definations.mk
+  
+  （定义了很多编译系统中用到的宏，相当于函数库）
+  
+  
+ 
+ 
+  
+   
+    Makefile
+   
+  
+  （这个
+  
+   
+    Makefile
+   
+  
+  特指
+  
+   build/core
+  
+  下的
+  
+   
+    Makefile
+   
+  
+  ，此文件主要控制生成
+  
+   system.img,ramdisk.img,userdata.img,
+  
+  以及
+  
+   recorvery
+ image
+  
+  ，
+  
+   sdk
+  
+  等）
+  
+  
+ 
+ 
+  
+   Binary.mk(
+  
+  控制如何生成目标文件
+  
+   )
+  
+ 
+ 
+  
+   Clear_vars.mk
+  
+  （清除编译系统中用到的临时变量）
+  
+  
+ 
+ 
+  
+   Combo/linux-arm.mk(
+  
+  控制如何生成
+  
+   linux-arm
+  
+  二进制文件，包括
+  
+   ARM
+  
+  相关的编译器，编译参数等的设置
+  
+   )
+  
+ 
+ 
+  
+   Copy_headers.mk
+  
+  （将头文件拷贝到指定目录）
+  
+  
+ 
+ 
+  分散于各个目录下的
+  
+   Android.mk(
+  
+  控制生成局部模块的源码，名称所需头文件路径，依赖库等特殊选项
+  
+   )
+  
+ 
+ 
+  
+   Build/envsetup.mk(
+  
+  编译环境初始化，定义一些实用的
+  
+   shell
+  
+  函数，方便编译使用
+  
+   )
+  
+ 
+ 
+  以上几个主要的文件，可以按照社会分工打一个比方：
+  
+  
+ 
+ 
+  
+   Main.mk
+  
+  是总统，是老大，承担了很多工作。
+  
+  
+ 
+ 
+  
+   
+    Makefile
+   
+  
+  是副总统，辅佐老大
+  
+   Main.mk
+  
+ 
+ 
+  
+   Base_rules.mk
+  
+  是交警，让不规则的东西，变得规则。
+  
+  
+ 
+ 
+  
+   Config.mk
+  
+  是省长，规定了各个人民群众该如何行事
+  
+  
+ 
+ 
+  
+   Definations.mk
+  
+  是图书馆管理员
+  
+  
+ 
+ 
+  
+   Binary.mk
+  
+  应该属于村长了，规定每个人该如何行事
+  
+  
+ 
+ 
+  
+   Clear_vars.mk
+  
+  应该属于保洁公司的工人吧
+  
+  
+ 
+ 
+  
+   Combo/linux-arm.mk
+  
+  应该属于社会公民了，他决定自己该如何去做
+  
+  
+ 
+ 
+  
+   Main.mk
+  
+  分析
+  
+  
+ 
+ 
+  
+   Main.mk
+  
+  主要包含如下几个部分的内容
+  
+  
+ 
+ 
+  
+   1.       SHELL
+  
+  设置
+  
+  
+ 
+ 
+  
+   2.
+  
+  编译环境配置
+  
+  
+ 
+ 
+  
+   3.
+  
+  编译环境检查
+  
+  
+ 
+ 
+  
+   4.
+  
+  包含必要的宏
+  
+  
+ 
+ 
+  
+   5.
+  
+  根据
+  
+   make
+  
+  参数设置编译时的变量
+  
+  
+ 
+ 
+  
+   6.
+  
+  包含需要编译的
+  
+   Android.mk
+  
+ 
+ 
+  
+   7.
+  
+  设置编译系统
+  
+   Target
+  
+  ：
+  
+   prerequisites
+  
+  控制整个编译流程
+  
+  
+ 
+ 
+  下面对上面几点进行必要解释：
+  
+  
+ 
+ 
+  有了前面小节对
+  
+   Android
+  
+  编译系统架构的分析，如果需要修改
+  
+   Android
+  
+  编译系统，就可以不至于盲目找问题，修改代码了。今天分析下
+  
+   main.mk
+  
+  ，看它能为我们
+  
+   Android
+  
+  编译提供什么有价值的信息，以及如何自己定制我们的
+  
+   Android
+  
+  编译系统。
+  
+  
+ 
+ 
+  
+   Main.mk
+  
+  的第一句就根据
+  
+   ANDROID_BUILD_SHELL
+  
+  来包裹编译系统用到的
+  
+   Shell
+  
+  ，如果我们不想使用
+  
+   bash
+  
+  ，而想使用
+  
+   sh
+  
+  ，那么就可以在它前面写上
+  
+   ANDROID_BUILD_SHELL := /bin/sh
+  
+  ，或者在
+  
+   build/envsetup.sh
+  
+  中添加相关定义。
+  
+  
+ 
+ 
+  定义完
+  
+   SHELL
+  
+  之后，就是对
+  
+   MAKE_VERSION
+  
+  的检查，然后定义了默认的编译目标
+  
+   droid!
+  
+ 
+ 
+  如果我们敲入
+  
+   make
+  
+  之后，不加任何参数，默认的目标就是
+  
+   droid
+  
+  。注意虽然后面的
+  
+   include $(BUILD_SYSTEM)/config.mk
+  
+  写在默认目标
+  
+   droid
+  
+  依赖之后，但其和之后的语句都是要执行的，这是
+  
+   
+    Makefile
+   
+  
+  的语法决定的。
+  
+  
+ 
+ 
+  后面会
+  
+   include config.mk cleanbuild.mk
+  
+  对编译系统进行必要的配置。后面就是对编译环境的检查，包括是否大小写敏感、路径检查、
+  
+   java
+  
+  版本检查、
+  
+   javac
+  
+  版本检查。
+  
+   Android
+  
+  对编译环境的检查如果符合条件，在下次编译的时候，不会再次进行检查。
+  
+  
+ 
+ 
+  检查完版本之后，会包含进
+  
+   definations.mk
+  
+  ，如前所述，
+  
+   definations.mk
+  
+  中定义了很多编译系统中用到的宏，这些宏在编译时需要经常调用，因此在编译的很靠前的阶段，就将之包含了进来。
+  
+  
+ 
+ 
+  然后就是针对
+  
+   make
+  
+  时传入的编译类型（
+  
+   eng user userdebug showcommands
+  
+  等）进行编译配置，这些配置会影响到最终编译目标所包括的模块。对于
+  
+   eng user userdebug sdk win_sdk tests
+  
+  等编译目标的区别，读者可以通过查看
+  
+   main.mk
+  
+  的代码找出其中到底有什么不同。
+  
+  
+ 
+ 
+  此处略去部分部分不重要的内容，直接跳到
+  
+  
+ 
+ 
+  
+   Ifeq($(SDK_ONLY),true)
+  
+  处，大概
+  
+   368
+  
+  行附近，这个判断语句一直到这个语句块结束，都是对
+  
+   subdirs
+  
+  变量的设置，
+  
+   subdirs
+  
+  变量决定了哪些子文件夹最终被编译。
+  
+  
+ 
+ 
+  在后面的
+  
+   subdir_makefiles
+  
+  变量的设置，决定了哪些
+  
+   Android.mk
+  
+  被编译。紧接着
+  
+   include $(subdir_makefiles)
+  
+  就会添加所有这些
+  
+   Android.mk
+  
+  文件的依赖。这其中包含了
+  
+   droid
+  
+  的依赖，后面我们会发现。
+  
+  
+ 
+ 
+  然后就会根据这些
+  
+   
+    Makefile
+   
+  
+  ，找出所有需要编译的模块（
+  
+   module
+  
+  ），以及进行必要的分类（
+  
+   eng_MODULES/debug_MODULES/tests_MODULES
+  
+  等、
+  
+   modules_to_check/modules_to_install
+  
+  等），用以区别对待。
+  
+  
+ 
+ 
+  紧接着是定义了一系列的隐含目标：
+  
+   prebuilt
+  
+  、
+  
+   all_copied_headers
+  
+  、
+  
+   files
+  
+  、
+  
+   checkbuild
+  
+  、
+  
+   ramdisk
+  
+  、
+  
+   systemtallball
+  
+  、
+  
+   userdataimage
+  
+  、
+  
+   userdatatarball
+  
+  、
+  
+   bootimg
+  
+  、
+  
+   droidcore
+  
+  等。最重要的一点，是会发现
+  
+   droid
+  
+  依赖于
+  
+   droidcore,
+  
+  而
+  
+   droidcore
+  
+  依赖于
+  
+  
+ 
+ 
+  
+   droidcore: files /
+  
+ 
+ 
+  
+   systemimage /
+  
+ 
+ 
+  
+   $(INSTALLED_BOOTIMAGE_TARGET) /
+  
+ 
+ 
+  
+   $(INSTALLED_RECOVERYIMAGE_TARGET) /
+  
+ 
+ 
+  
+   $(INSTALLED_USERDATAIMAGE_TARGET) /
+  
+ 
+ 
+  
+   $(INSTALLED_FILES_FILE)
+  
+ 
+ 
+  正是这几个依赖项，控制着整个
+  
+   android
+  
+  的编译
+ 
+
+

@@ -1,0 +1,14 @@
+---
+layout: post
+title: "【JS】属性控制 Object.preventExtensions(扩展) > Object.seal(删除) > Object.freeze(修改)"
+date: 2014-03-18 00:56:00 
+comments: true
+categories: []
+tags: []
+description: "【JS】属性控制 Object.preventExtensions(扩展) > Object.seal(删除) > Object.freeze(修改)"
+keywords: 
+---
+
+
+
+

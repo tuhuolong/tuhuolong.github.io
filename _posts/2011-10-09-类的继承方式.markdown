@@ -1,0 +1,23 @@
+---
+layout: post
+title: "类的继承方式"
+date: 2011-10-09 10:17:00 
+comments: true
+categories: [编译器]
+tags: [编译器]
+description: "类的继承方式"
+keywords: 编译器
+---
+
+
+ 
+  
+ 
+ 
+  公有继承:"是一个"
+ 
+ 
+  私有继承:"用...来实现",编译器不会将子类对象转化成父类对象
+ 
+
+

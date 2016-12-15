@@ -1,0 +1,31 @@
+---
+layout: post
+title: "MAT分析dump文件"
+date: 2015-09-24 20:41:00 
+comments: true
+categories: []
+tags: []
+description: "MAT分析dump文件"
+keywords: 
+---
+
+
+ 
+  hprof-conv android.hprof android.std.hprof
+  select * from instanceof android.app.Activity
+  select * from instanceof android.app.Activity a where a.mDestroyed = true
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

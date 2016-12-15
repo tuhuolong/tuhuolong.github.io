@@ -1,0 +1,14 @@
+---
+layout: post
+title: "【浏览器】document.documentElement.offsetWidth/offsetHeight 页面宽高(CSS像素)"
+date: 2014-02-20 22:42:00 
+comments: true
+categories: []
+tags: []
+description: "【浏览器】document.documentElement.offsetWidth/offsetHeight 页面宽高(CSS像素)"
+keywords: 
+---
+
+
+
+

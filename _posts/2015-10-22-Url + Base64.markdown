@@ -1,0 +1,88 @@
+---
+layout: post
+title: "Url + Base64"
+date: 2015-10-22 18:29:00 
+comments: true
+categories: []
+tags: []
+description: "Url + Base64"
+keywords: 
+---
+
+
+ 
+  
+   Url
+   
+    
+   
+  
+  
+   
+  
+  
+   
+  
+  
+   path:
+   
+    
+     space
+    
+    ->;
+    
+     %20
+    
+    
+     
+      +
+     
+    
+   
+  
+  
+   queryString:
+   
+    
+     space
+    
+    ->;
+    
+     +
+    
+    /
+    
+     %20
+    
+    
+     
+      +
+     
+     ->;
+     
+      %2B
+     
+    
+   
+  
+  
+   Base64
+   
+    
+   
+  
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

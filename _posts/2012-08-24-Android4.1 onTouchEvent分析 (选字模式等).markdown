@@ -1,0 +1,1432 @@
+---
+layout: post
+title: "Android4.1 onTouchEvent分析 (选字模式等)"
+date: 2012-08-24 14:25:00 
+comments: true
+categories: [android]
+tags: [android]
+description: "Android4.1 onTouchEvent分析 (选字模式等)"
+keywords: android
+---
+
+
+ 
+  UI thread
+  
+   ++++ WebView.onTouchEvent
+   
+    ++++ Dispatcher.postPointerEvent
+    
+     ACTION_DOWN
+    
+    
+     (4.1 WebView把事件交给Dispatcher处理)
+    
+    
+     ++++ Dispatcher.updateStateTrackersLocked
+     
+      
+       ++++
+       
+        Dispatcher.checkForDoubleTapOnDownLocked                                           （
+        
+         正二次计时并点击有效
+        
+        
+         ）
+        
+       
+       
+        ++++                 if（mPostClickScheduled==true  &&  (deltaX*deltaX+deltaY*deltaY)<mDoubleTapSlopSquared）
+        
+         
+          ++++
+          
+           mPostClickScheduled = false;
+           
+            退出二次计时
+           
+          
+          
+           ++++
+           
+            Dispatcher.
+           
+           
+            mUiHandler.removeMessages  MSG_CLICK
+            
+             取消单击
+            
+           
+          
+         
+         
+          ++++                         mPostClickScheduled = false;  mIsDoubleTapCandidate = true;
+          
+           等待双击
+          
+         
+        
+       
+      
+      
+       ++++         Dispatcher mUiHandler.sendEmptyMessageDelayed  MSG_LONG_PRESS （LONG_PRESS_TIMEOUT）
+       
+        ++++         Dispatcher.enqueueWebKitEvent  EVENT_TYPE_HIT_TEST
+        
+         ++++         Dispatcher mWebKitHandler.sendEmptyMessage  MSG_DISPATCH_WEBKIT_EVENTS
+         
+          ++++         Dispatcher mUiHandler.sendEmptyMessageDelayed  MSG_SHOW_TAP_HIGHLIGHT （TAP_TIMEOUT）
+          
+           ++++ Dispatcher.enqueueUiEvent  EVENT_TYPE_TOUCH
+           
+            ++++         Dispatcher mUiHandler.sendEmptyMessage  MSG_DISPATCH_UI_EVENTS
+            
+             ++++ Dispatcher.dispatchUiEvents
+             
+              ++++ Dispatcher.dequeueUiEvent  EVENT_TYPE_TOUCH     出队
+              
+               ++++         Dispatcher.dispatchUiEvent  EVENT_TYPE_TOUCH
+               
+                分给WebView
+               
+               
+                ++++         WebView.dispatchUiEvent  EVENT_TYPE_TOUCH
+                
+                 ++++         WebView.onHandleUiEvent  EVENT_TYPE_TOUCH
+                 
+                  ++++         WebView.onHandleUiTouchEvent
+                  
+                   ++++         WebView.handleTouchEventCommon  ACTION_DOWN
+                   
+                    ++++                 if（mSelectingText
+                    
+                     ==true
+                    
+                    &&  点中mSelectHandleLeft或mSelectHandleRight）
+                    
+                     
+                      选字模式
+                     
+                     
+                      并
+                     
+                     
+                      点中游标
+                     
+                    
+                    
+                     ++++                         mSelectionStarted = true;
+                     
+                      开始选择
+                     
+                     设置mSelectDraggingOffset、mSelectDraggingCursor
+                     
+                      
+                       
+                        
+                         ++++
+                         
+                         
+                         WebView.startTouch
+                        
+                       
+                      
+                     
+                     
+                      ++++ Dispatcher mUiHandler.removeMessages  MSG_DISPATCH_UI_EVENTS
+                      
+                       队列为空
+                      
+                      
+                      
+                      
+                       
+                        
+                         
+                          WebCore thread
+                         
+                        
+                        
+                         
+                          ++++ Dispatcher.mWebKitHandler.handleMessage  MSG_DISPATCH_WEBKIT_EVENTS
+                          
+                           ++++ Dispatcher.dispatchWebKitEvents
+                           
+                            ++++ Dispatcher.dequeueWebKitEvent  EVENT_TYPE_HIT_TEST
+                            
+                             ++++         Dispatcher.dispatchWebKitEvent
+                             
+                              EVENT_TYPE_HIT_TEST
+                             
+                             
+                              ++++         WebViewCore.dispatchWebKitEvent
+                              
+                               EVENT_TYPE_HIT_TEST
+                              
+                              
+                               ++++         WebViewCore.performHitTest
+                               
+                                ++++         WebViewCore.nativeHitTest
+                                
+                                
+                                
+                                 
+                                  - - - -         WebViewCore::HitTest
+                                  
+                                   - - - -         WebViewCore::hitTestAtPoint
+                                   
+                                    - - - -         Frame.EventHandler::hitTestResultAtPoint
+                                    
+                                     - - - -
+                                     
+                                      RenderView.RenderLayer::hitTest
+                                     
+                                     
+                                      
+                                       ++++         WebViewCore WebView.sendMessage  HIT_TEST_RESULT
+                                       
+                                        将WebKitHitTest指针传给WebView
+                                       
+                                       
+                                        
+                                         ++++ Dispatcher.enqueueUiEvent  EVENT_TYPE_HIT_TEST
+                                        
+                                        
+                                         
+                                          ++++         Dispatcher mUiHandler.sendEmptyMessage  MSG_DISPATCH_UI_EVENTS
+                                         
+                                        
+                                       
+                                      
+                                     
+                                    
+                                   
+                                  
+                                 
+                                
+                               
+                              
+                             
+                            
+                           
+                          
+                         
+                         
+                          
+                           UI thread
+                           
+                            ++++ WebView.handleMessage  HIT_TEST_RESULT
+                            
+                             
+                              ++++
+                              
+                               WebView.
+                              
+                              setHitTestResult
+                             
+                             
+                              
+                               ++++         mInitialHitTestResult.setType和
+                               
+                                setExtra
+                                
+                                 
+                                  UI thread
+                                  
+                                   
+                                    ++++ Dispatcher.mUiHandler.handleMessage  MSG_DISPATCH_UI_EVENTS
+                                   
+                                   
+                                    
+                                     ++++ Dispatcher.dispatchUiEvents
+                                    
+                                    
+                                     
+                                      ++++ Dispatcher.dequeueUiEvent  EVENT_TYPE_HIT_TEST
+                                     
+                                     
+                                      
+                                       ++++         Dispatcher.dispatchUiEvent
+                                       
+                                        EVENT_TYPE_HIT_TEST
+                                       
+                                      
+                                      
+                                       
+                                        ++++         WebView.dispatchUiEvent
+                                        
+                                         EVENT_TYPE_HIT_TEST
+                                        
+                                        
+                                         ++++         WebView.onHandleUiEvent
+                                         
+                                          EVENT_TYPE_HIT_TEST
+                                         
+                                        
+                                       
+                                      
+                                     
+                                    
+                                   
+                                  
+                                 
+                                
+                               
+                              
+                              
+                               
+                                UI thread
+                                
+                                 ++++ Dispatcher.mUiHandler.handleMessage  MSG_SHOW_TAP_HIGHLIGHT
+                                 
+                                  ++++ Dispatcher.postShowTapHighlight
+                                  
+                                   ++++ WebView.showTapHighlight
+                                   
+                                    ++++         invalidate
+                                    
+                                     
+                                      UI thread
+                                      
+                                       ++++ Dispatcher.mUiHandler.handleMessage  MSG_LONG_PRESS
+                                       
+                                        ++++ Dispatcher.postLongPress
+                                        
+                                         ++++         Dispatcher.enqueueUiEvent  EVENT_TYPE_LONG_PRESS
+                                         
+                                          ++++                 Dispatcher mUiHandler.sendEmptyMessage  MSG_DISPATCH_UI_EVENTS
+                                          
+                                           
+                                            UI thread
+                                            
+                                             ++++ Dispatcher.mUiHandler.handleMessage  MSG_DISPATCH_UI_EVENTS
+                                             
+                                              ++++ Dispatcher.dispatchUiEvents
+                                              
+                                               ++++ Dispatcher.dequeueUiEvent
+                                               
+                                                EVENT_TYPE_LONG_PRESS
+                                               
+                                               
+                                                ++++         Dispatcher.dispatchUiEvent
+                                                
+                                                 EVENT_TYPE_LONG_PRESS
+                                                
+                                                
+                                                 ++++         WebView.dispatchUiEvent
+                                                 
+                                                  EVENT_TYPE_LONG_PRESS
+                                                 
+                                                 
+                                                  ++++         WebView.onHandleUiEvent
+                                                  
+                                                   EVENT_TYPE_LONG_PRESS
+                                                  
+                                                  
+                                                   ++++         WebView.performLongClick
+                                                   
+                                                    ++++         WebView.selectText
+                                                    
+                                                     ++++         WebView WebViewCore.sendMessage  SELECT_WORD_AT
+                                                     
+                                                      
+                                                       WebCore thread
+                                                       
+                                                        ++++ WebViewCore.handleMessage  SELECT_WORD_AT
+                                                        
+                                                         ++++ WebViewCore.nativeSelectWordAt
+                                                         
+                                                          - - - - WebViewCore::SelectWordAt
+                                                          
+                                                           - - - - WebViewCore::selectWordAt
+                                                           
+                                                            - - - -         RenderView.RenderLayer::hitTest
+                                                            
+                                                             进行一次hitTest
+                                                            
+                                                            ->;Node(结点)->;VisiblePosition->;
+                                                            
+                                                             VisibleSelection
+                                                            
+                                                            
+                                                             - - - - WebViewCore::selectWordAroundPosition
+                                                             
+                                                              - - - - SelectionController::setSelection
+                                                              
+                                                               保存选择结果VisibleSelection
+                                                              
+                                                              
+                                                               
+                                                                - - - -
+                                                                
+                                                                 return; 选择不变->;返回
+                                                                
+                                                               
+                                                               
+                                                                - - - - WebViewCore::updateTextSelection
+                                                                
+                                                                 - - - -         WebViewCore::createSelectText
+                                                                 
+                                                                  创建SelectText
+                                                                 
+                                                                 
+                                                                  - - - -         WebViewCore JNI updateTextSelection
+                                                                  
+                                                                   ++++         WebViewCore.updateTextSelection
+                                                                   
+                                                                    将SelectText指针传给WebView
+                                                                   
+                                                                   
+                                                                    ++++         WebViewCore WebView.sendMessage  UPDATE_TEXT_SELECTION_MSG_ID
+                                                                    
+                                                                     
+                                                                      UI thread
+                                                                      
+                                                                       ++++ WebView.onTouchEvent
+                                                                       
+                                                                        ++++ Dispatcher.postPointerEvent
+                                                                        
+                                                                         ACTION_MOVE
+                                                                        
+                                                                        
+                                                                         ++++ Dispatcher.updateStateTrackersLocked
+                                                                         
+                                                                          ++++ Dispatcher.enqueueUiEvent  EVENT_TYPE_TOUCH
+                                                                          
+                                                                           ++++         Dispatcher mUiHandler.sendEmptyMessage  MSG_DISPATCH_UI_EVENTS
+                                                                           
+                                                                            ++++ Dispatcher.dispatchUiEvents
+                                                                            
+                                                                             ++++ Dispatcher.dequeueUiEvent  EVENT_TYPE_TOUCH
+                                                                             
+                                                                              ++++         Dispatcher.dispatchUiEvent  EVENT_TYPE_TOUCH
+                                                                              
+                                                                               ++++         WebView.dispatchUiEvent  EVENT_TYPE_TOUCH
+                                                                               
+                                                                                ++++         WebView.onHandleUiEvent  EVENT_TYPE_TOUCH
+                                                                                
+                                                                                 ++++         WebView.onHandleUiTouchEvent
+                                                                                 
+                                                                                  ++++         WebView.handleTouchEventCommon  ACTION_MOVE
+                                                                                  
+                                                                                   
+                                                                                    ++++                 if（mSelectingText
+                                                                                    
+                                                                                     ==true
+                                                                                    
+                                                                                    &&  mSelectionStarted
+                                                                                    
+                                                                                     ==true
+                                                                                    
+                                                                                    ）
+                                                                                   
+                                                                                   
+                                                                                    选字模式并开始选择
+                                                                                   
+                                                                                   
+                                                                                    
+                                                                                     ++++                         WebView.updateWebkitSelection
+                                                                                    
+                                                                                    
+                                                                                     
+                                                                                      ++++                                 WebView WebViewCore.sendMessage  SELECT_TEXT
+                                                                                     
+                                                                                    
+                                                                                    
+                                                                                     
+                                                                                      ++++                         invalidate
+                                                                                      
+                                                                                       
+                                                                                        
+                                                                                         WebCore thread
+                                                                                         
+                                                                                          ++++ WebViewCore.handleMessage  SELECT_TEXT
+                                                                                          
+                                                                                           ++++ WebViewCore.nativeSelectText
+                                                                                           
+                                                                                            - - - - WebViewCore::SelectText
+                                                                                            
+                                                                                             - - - - WebViewCore::selectText
+                                                                                             
+                                                                                              
+                                                                                               - - - -
+                                                                                               
+                                                                                                RenderView.RenderLayer::hitTest
+                                                                                               
+                                                                                               
+                                                                                                start hitTest
+                                                                                               
+                                                                                               
+                                                                                                ->;Node(结点)->;VisiblePosition
+                                                                                               
+                                                                                               
+                                                                                                - - - -
+                                                                                                
+                                                                                                 RenderView.RenderLayer::hitTest
+                                                                                                 
+                                                                                                  end
+                                                                                                 
+                                                                                                
+                                                                                                
+                                                                                                 hitTest
+                                                                                                
+                                                                                                
+                                                                                                 ->;Node(结点)->;VisiblePosition->;
+                                                                                                
+                                                                                                
+                                                                                                 VisibleSelection
+                                                                                                
+                                                                                               
+                                                                                              
+                                                                                              
+                                                                                               - - - - SelectionController::setSelection
+                                                                                               
+                                                                                                保存选择结果VisibleSelection
+                                                                                               
+                                                                                               
+                                                                                                - - - -         return; 选择不变->;返回
+                                                                                                
+                                                                                                 - - - - WebViewCore::updateTextSelection
+                                                                                                 
+                                                                                                  选择改变->;更新
+                                                                                                 
+                                                                                                 
+                                                                                                  - - - -         WebViewCore::createSelectText
+                                                                                                  
+                                                                                                   创建SelectText
+                                                                                                  
+                                                                                                  
+                                                                                                   - - - -         WebViewCore JNI updateTextSelection
+                                                                                                   
+                                                                                                    ++++         WebViewCore.updateTextSelection
+                                                                                                    
+                                                                                                     将SelectText指针传给WebView
+                                                                                                    
+                                                                                                    
+                                                                                                     ++++         WebViewCore WebView.sendMessage  UPDATE_TEXT_SELECTION_MSG_ID
+                                                                                                    
+                                                                                                   
+                                                                                                  
+                                                                                                 
+                                                                                                
+                                                                                               
+                                                                                              
+                                                                                             
+                                                                                            
+                                                                                           
+                                                                                          
+                                                                                         
+                                                                                        
+                                                                                        
+                                                                                         
+                                                                                         
+                                                                                        
+                                                                                       
+                                                                                      
+                                                                                     
+                                                                                     
+                                                                                      
+                                                                                       UI thread
+                                                                                      
+                                                                                      
+                                                                                       
+                                                                                        ++++ WebView.handleMessage  UPDATE_TEXT_SELECTION_MSG_ID
+                                                                                       
+                                                                                       
+                                                                                        
+                                                                                         ++++ WebView.updateTextSelectionFromMessage
+                                                                                        
+                                                                                        
+                                                                                         
+                                                                                          ++++         WebView.nativeSetTextSelection
+                                                                                         
+                                                                                         
+                                                                                          保存SelectText指针
+                                                                                         
+                                                                                         
+                                                                                          在WebView中
+                                                                                         
+                                                                                         
+                                                                                          
+                                                                                           - - - -                 WebView::nativeSetTextSelection
+                                                                                          
+                                                                                          
+                                                                                           
+                                                                                            - - - -                 WebView::setTextSelection
+                                                                                           
+                                                                                           
+                                                                                            
+                                                                                             - - - -                 WebView::setDrawExtra
+                                                                                            
+                                                                                            
+                                                                                             
+                                                                                              ++++         WebView.setupWebkitSelect
+                                                                                             
+                                                                                             
+                                                                                              进入选字模式
+                                                                                             
+                                                                                             
+                                                                                              
+                                                                                               ++++                 WebView.startSelectingText     mSelectingText=true; mShowTextSelectionExtra=true;
+                                                                                               
+                                                                                                
+                                                                                                 ++++
+                                                                                                 
+                                                                                                  mTouchMode=TOUCH_DRAG_MODE;
+                                                                                                 
+                                                                                                
+                                                                                               
+                                                                                              
+                                                                                              
+                                                                                               
+                                                                                                ++++         invalidate
+                                                                                               
+                                                                                               
+                                                                                                
+                                                                                                 UI thread
+                                                                                                 
+                                                                                                  ++++ WebView.onTouchEvent
+                                                                                                  
+                                                                                                   ++++ Dispatcher.postPointerEvent
+                                                                                                   
+                                                                                                    ACTION_UP
+                                                                                                   
+                                                                                                   
+                                                                                                    ++++ Dispatcher.updateStateTrackersLocked
+                                                                                                    
+                                                                                                     
+                                                                                                      ++++         Dispatcher.
+                                                                                                      
+                                                                                                       mUiHandler.removeMessages  MSG_LONG_PRESS
+                                                                                                       
+                                                                                                        取消长按
+                                                                                                       
+                                                                                                      
+                                                                                                     
+                                                                                                     
+                                                                                                      
+                                                                                                       ++++         if（
+                                                                                                       
+                                                                                                        downDuration<
+                                                                                                        
+                                                                                                         LONG_PRESS_TIMEOUT
+                                                                                                        
+                                                                                                       
+                                                                                                       ）
+                                                                                                       
+                                                                                                        长按前
+                                                                                                       
+                                                                                                       
+                                                                                                        
+                                                                                                         ++++                 if（
+                                                                                                         
+                                                                                                          mIsDoubleTapCandidate==true）
+                                                                                                          
+                                                                                                           正等待双击
+                                                                                                          
+                                                                                                         
+                                                                                                         
+                                                                                                          
+                                                                                                           ++++                         Dispatcher.enqueueUiEvent  EVENT_TYPE_DOUBLE_TAP
+                                                                                                           
+                                                                                                            ++++                                 Dispatcher mUiHandler.sendEmptyMessage  MSG_DISPATCH_UI_EVENTS
+                                                                                                           
+                                                                                                          
+                                                                                                         
+                                                                                                        
+                                                                                                        
+                                                                                                         
+                                                                                                          ++++                 else
+                                                                                                          
+                                                                                                           
+                                                                                                            ++++                         mPostClickScheduled=true;
+                                                                                                            
+                                                                                                             开始
+                                                                                                            
+                                                                                                            
+                                                                                                             二次计时,
+                                                                                                             
+                                                                                                              发送短按
+                                                                                                             
+                                                                                                            
+                                                                                                           
+                                                                                                          
+                                                                                                         
+                                                                                                        
+                                                                                                       
+                                                                                                      
+                                                                                                      
+                                                                                                       
+                                                                                                        ++++                         Dispatcher mUiHandler.sendEmptyMessageDelayed  MSG_CLICK （DOUBLE_TAP_TIMEOUT）
+                                                                                                        
+                                                                                                         
+                                                                                                          ++++         else
+                                                                                                         
+                                                                                                        
+                                                                                                       
+                                                                                                       
+                                                                                                        ++++                 WebView.showTapHighlight
+                                                                                                        
+                                                                                                         ++++ Dispatcher.enqueueUiEvent  EVENT_TYPE_TOUCH
+                                                                                                         
+                                                                                                          ++++         Dispatcher mUiHandler.sendEmptyMessage  MSG_DISPATCH_UI_EVENTS
+                                                                                                          
+                                                                                                           ++++ Dispatcher.dispatchUiEvents
+                                                                                                           
+                                                                                                            
+                                                                                                             ++++ Dispatcher.dequeueUiEvent  EVENT_TYPE_DOUBLE_TAP
+                                                                                                             
+                                                                                                              【若有双击事件】
+                                                                                                             
+                                                                                                             
+                                                                                                              ++++         Dispatcher.dispatchUiEvent  EVENT_TYPE_DOUBLE_TAP
+                                                                                                              
+                                                                                                               ++++         WebView.dispatchUiEvent  EVENT_TYPE_DOUBLE_TAP
+                                                                                                               
+                                                                                                                ++++         WebView.onHandleUiEvent  EVENT_TYPE_DOUBLE_TAP
+                                                                                                               
+                                                                                                              
+                                                                                                             
+                                                                                                            
+                                                                                                            
+                                                                                                             
+                                                                                                              ++++         ZoomManager.handleDoubleTap
+                                                                                                             
+                                                                                                             
+                                                                                                              ++++ Dispatcher.dequeueUiEvent  EVENT_TYPE_TOUCH
+                                                                                                              
+                                                                                                               ++++         Dispatcher.dispatchUiEvent  EVENT_TYPE_TOUCH
+                                                                                                               
+                                                                                                                ++++         WebView.dispatchUiEvent  EVENT_TYPE_TOUCH
+                                                                                                                
+                                                                                                                 ++++         WebView.onHandleUiEvent  EVENT_TYPE_TOUCH
+                                                                                                                 
+                                                                                                                  ++++         WebView.onHandleUiTouchEvent
+                                                                                                                  
+                                                                                                                   
+                                                                                                                    ++++
+                                                                                                                   
+                                                                                                                   
+                                                                                                                    WebView.handleTouchEventCommon
+                                                                                                                   
+                                                                                                                   
+                                                                                                                    ACTION_UP
+                                                                                                                    
+                                                                                                                     
+                                                                                                                      ++++               【1】TOUCH_INIT_MODE或TOUCH_SHORTPRESS_START_MODE或TOUCH_SHORTPRESS_MODE   短按
+                                                                                                                     
+                                                                                                                    
+                                                                                                                   
+                                                                                                                   
+                                                                                                                    
+                                                                                                                     ++++                 if（mSelectingText==true  &&  mSelectionStarted==false）
+                                                                                                                    
+                                                                                                                    
+                                                                                                                     选字模式但没有开始选择
+                                                                                                                    
+                                                                                                                    
+                                                                                                                     (即没点中游标)
+                                                                                                                    
+                                                                                                                    
+                                                                                                                     
+                                                                                                                      ++++                         WebView.selectionDone
+                                                                                                                     
+                                                                                                                     
+                                                                                                                      退出选字模式
+                                                                                                                     
+                                                                                                                     
+                                                                                                                      
+                                                                                                                       ++++                                 WebView.endSelectingText     mSelectingText=false; mShowTextSelectionExtra=false;
+                                                                                                                       
+                                                                                                                        ++++                                 invalidate
+                                                                                                                        
+                                                                                                                         
+                                                                                                                          ++++
+                                                                                                                         
+                                                                                                                         
+                                                                                                                          
+                                                                                                                           【2】
+                                                                                                                          
+                                                                                                                         
+                                                                                                                         
+                                                                                                                          
+                                                                                                                           ++++
+                                                                                                                          
+                                                                                                                         
+                                                                                                                        
+                                                                                                                       
+                                                                                                                      
+                                                                                                                      
+                                                                                                                       
+                                                                                                                        ++++                 WebView.stopTouch
+                                                                                                                       
+                                                                                                                       
+                                                                                                                        ++++ Dispatcher mUiHandler.removeMessages  MSG_DISPATCH_UI_EVENTS
+                                                                                                                        
+                                                                                                                         
+                                                                                                                          
+                                                                                                                           
+                                                                                                                            
+                                                                                                                             
+                                                                                                                              
+                                                                                                                               
+                                                                                                                                
+                                                                                                                                 UI thread
+                                                                                                                                
+                                                                                                                                
+                                                                                                                                 
+                                                                                                                                  ++++ Dispatcher.mUiHandler.handleMessage  MSG_CLICK
+                                                                                                                                  
+                                                                                                                                   超过二次计时->;单击
+                                                                                                                                  
+                                                                                                                                 
+                                                                                                                                 
+                                                                                                                                  
+                                                                                                                                   ++++ Dispatcher.postClick
+                                                                                                                                   
+                                                                                                                                    
+                                                                                                                                     ++++
+                                                                                                                                     
+                                                                                                                                      mPostClickScheduled = false;
+                                                                                                                                      
+                                                                                                                                       取消
+                                                                                                                                      
+                                                                                                                                      
+                                                                                                                                       二次计时
+                                                                                                                                      
+                                                                                                                                     
+                                                                                                                                    
+                                                                                                                                    
+                                                                                                                                     
+                                                                                                                                      ++++
+                                                                                                                                      
+                                                                                                                                       WebView.showTapHighlight
+                                                                                                                                      
+                                                                                                                                     
+                                                                                                                                    
+                                                                                                                                   
+                                                                                                                                  
+                                                                                                                                  
+                                                                                                                                   
+                                                                                                                                    ++++         Dispatcher.
+                                                                                                                                    
+                                                                                                                                     enqueueWebKitEvent  EVENT_TYPE_CLICK
+                                                                                                                                    
+                                                                                                                                   
+                                                                                                                                   
+                                                                                                                                    
+                                                                                                                                     ++++
+                                                                                                                                     
+                                                                                                                                      Dispatcher mWebKitHandler.sendEmptyMessage  MSG_DISPATCH_WEBKIT_EVENTS
+                                                                                                                                     
+                                                                                                                                    
+                                                                                                                                    
+                                                                                                                                     
+                                                                                                                                     
+                                                                                                                                    
+                                                                                                                                   
+                                                                                                                                  
+                                                                                                                                 
+                                                                                                                                
+                                                                                                                               
+                                                                                                                              
+                                                                                                                              
+                                                                                                                               
+                                                                                                                                WebCore thread
+                                                                                                                                
+                                                                                                                                 ++++ Dispatcher.mWebKitHandler.handleMessage  MSG_DISPATCH_WEBKIT_EVENTS
+                                                                                                                                 
+                                                                                                                                  ++++ Dispatcher.dispatchWebKitEvents
+                                                                                                                                  
+                                                                                                                                   
+                                                                                                                                    
+                                                                                                                                     ++++
+                                                                                                                                     
+                                                                                                                                      Dispatcher.dequeueWebKitEvent
+                                                                                                                                      
+                                                                                                                                       EVENT_TYPE_CLICK
+                                                                                                                                      
+                                                                                                                                     
+                                                                                                                                    
+                                                                                                                                   
+                                                                                                                                  
+                                                                                                                                  
+                                                                                                                                   ++++         Dispatcher.dispatchWebKitEvent
+                                                                                                                                   
+                                                                                                                                    EVENT_TYPE_CLICK
+                                                                                                                                   
+                                                                                                                                   
+                                                                                                                                    ++++         WebViewCore.dispatchWebKitEvent
+                                                                                                                                    
+                                                                                                                                     EVENT_TYPE_CLICK
+                                                                                                                                    
+                                                                                                                                    
+                                                                                                                                     ++++         WebViewCore.nativeMouseClick
+                                                                                                                                     
+                                                                                                                                     
+                                                                                                                                     
+                                                                                                                                      
+                                                                                                                                       - - - -         WebViewCore::MouseClick
+                                                                                                                                      
+                                                                                                                                      
+                                                                                                                                       
+                                                                                                                                        - - - -         WebViewCore::performMouseClick
+                                                                                                                                        
+                                                                                                                                         
+                                                                                                                                          - - - -
+                                                                                                                                          
+                                                                                                                                           EventHandler::handleMousePressEvent
+                                                                                                                                          
+                                                                                                                                          
+                                                                                                                                           - - - -
+                                                                                                                                          
+                                                                                                                                         
+                                                                                                                                         
+                                                                                                                                          
+                                                                                                                                           - - - -                 EventHandler::handleMouseReleaseEvent
+                                                                                                                                           
+                                                                                                                                            
+                                                                                                                                             - - - -                         EventHandler::prepareMouseEvent
+                                                                                                                                            
+                                                                                                                                            
+                                                                                                                                             
+                                                                                                                                              - - - -                                 Document::prepareMouseEvent
+                                                                                                                                              
+                                                                                                                                               - - - -                                         RenderView.RenderLayer::hitTest
+                                                                                                                                               
+                                                                                                                                                - - - -                         EventHandler::dispatchMouseEvent  mouseup
+                                                                                                                                                
+                                                                                                                                                 - - - -                                 EventDispatcher::dispatchEvent
+                                                                                                                                                 
+                                                                                                                                                  mouseup
+                                                                                                                                                 
+                                                                                                                                                 
+                                                                                                                                                  - - - -                         EventHandler::dispatchMouseEvent  click
+                                                                                                                                                  
+                                                                                                                                                   - - - -                                 EventDispatcher::dispatchEvent
+                                                                                                                                                   
+                                                                                                                                                    
+                                                                                                                                                     click
+                                                                                                                                                    
+                                                                                                                                                   
+                                                                                                                                                   
+                                                                                                                                                    
+                                                                                                                                                     - - - -                                        （Node*->;defaultEventHandler click）
+                                                                                                                                                     
+                                                                                                                                                      - - - -                                         HTMLAnchorElement::defaultEventHandler
+                                                                                                                                                      
+                                                                                                                                                       - - - -                                         WebCore::handleLinkClick
+                                                                                                                                                       
+                                                                                                                                                        - - - -                                         FrameLoader::urlSelected
+                                                                                                                                                        
+                                                                                                                                                         
+                                                                                                                                                          发送请求
+                                                                                                                                                         
+                                                                                                                                                        
+                                                                                                                                                       
+                                                                                                                                                      
+                                                                                                                                                     
+                                                                                                                                                    
+                                                                                                                                                   
+                                                                                                                                                  
+                                                                                                                                                 
+                                                                                                                                                
+                                                                                                                                               
+                                                                                                                                              
+                                                                                                                                             
+                                                                                                                                            
+                                                                                                                                           
+                                                                                                                                          
+                                                                                                                                         
+                                                                                                                                        
+                                                                                                                                       
+                                                                                                                                      
+                                                                                                                                     
+                                                                                                                                    
+                                                                                                                                   
+                                                                                                                                  
+                                                                                                                                 
+                                                                                                                                
+                                                                                                                               
+                                                                                                                              
+                                                                                                                              
+                                                                                                                               
+                                                                                                                                ++++ Dispatcher.enqueueUiEvent
+                                                                                                                                
+                                                                                                                                 EVENT_TYPE_CLICK
+                                                                                                                                
+                                                                                                                               
+                                                                                                                               
+                                                                                                                                
+                                                                                                                                 ++++         Dispatcher mUiHandler.sendEmptyMessage  MSG_DISPATCH_UI_EVENTS
+                                                                                                                                 
+                                                                                                                                  
+                                                                                                                                   
+                                                                                                                                    UI thread
+                                                                                                                                    
+                                                                                                                                     ++++ Dispatcher.mUiHandler.handleMessage  MSG_DISPATCH_UI_EVENTS
+                                                                                                                                     
+                                                                                                                                      ++++ Dispatcher.dispatchUiEvents
+                                                                                                                                      
+                                                                                                                                       ++++ Dispatcher.dequeueUiEvent  EVENT_TYPE_CLICK
+                                                                                                                                       
+                                                                                                                                        ++++         Dispatcher.dispatchUiEvent  EVENT_TYPE_CLICK
+                                                                                                                                        
+                                                                                                                                         ++++         WebView.dispatchUiEvent  EVENT_TYPE_CLICK
+                                                                                                                                         
+                                                                                                                                          ++++         WebView.onHandleUiEvent  EVENT_TYPE_CLICK
+                                                                                                                                         
+                                                                                                                                        
+                                                                                                                                       
+                                                                                                                                      
+                                                                                                                                     
+                                                                                                                                    
+                                                                                                                                   
+                                                                                                                                   
+                                                                                                                                    
+                                                                                                                                     
+                                                                                                                                      ++++
+                                                                                                                                     
+                                                                                                                                     
+                                                                                                                                      
+                                                                                                                                       ++++
+                                                                                                                                      
+                                                                                                                                      
+                                                                                                                                       
+                                                                                                                                        ++++
+                                                                                                                                        
+                                                                                                                                         
+                                                                                                                                          ++++
+                                                                                                                                         
+                                                                                                                                         
+                                                                                                                                          
+                                                                                                                                           ++++
+                                                                                                                                          
+                                                                                                                                          
+                                                                                                                                           
+                                                                                                                                            ++++
+                                                                                                                                            
+                                                                                                                                             
+                                                                                                                                              ++++
+                                                                                                                                             
+                                                                                                                                             
+                                                                                                                                              
+                                                                                                                                               ++++
+                                                                                                                                               
+                                                                                                                                                ++++
+                                                                                                                                                
+                                                                                                                                                 ++++
+                                                                                                                                                 
+                                                                                                                                                  ++++
+                                                                                                                                                  
+                                                                                                                                                   ++++
+                                                                                                                                                   
+                                                                                                                                                    ++++
+                                                                                                                                                   
+                                                                                                                                                  
+                                                                                                                                                 
+                                                                                                                                                
+                                                                                                                                               
+                                                                                                                                              
+                                                                                                                                             
+                                                                                                                                            
+                                                                                                                                           
+                                                                                                                                           
+                                                                                                                                            
+                                                                                                                                             ++++
+                                                                                                                                            
+                                                                                                                                            
+                                                                                                                                             
+                                                                                                                                              ++++
+                                                                                                                                             
+                                                                                                                                             
+                                                                                                                                              
+                                                                                                                                               ++++
+                                                                                                                                              
+                                                                                                                                              
+                                                                                                                                               
+                                                                                                                                                ++++
+                                                                                                                                                
+                                                                                                                                                 
+                                                                                                                                                  ++++
+                                                                                                                                                 
+                                                                                                                                                 
+                                                                                                                                                  
+                                                                                                                                                   ++++
+                                                                                                                                                  
+                                                                                                                                                  
+                                                                                                                                                   
+                                                                                                                                                    ++++
+                                                                                                                                                   
+                                                                                                                                                   
+                                                                                                                                                    
+                                                                                                                                                     ++++
+                                                                                                                                                    
+                                                                                                                                                    
+                                                                                                                                                     
+                                                                                                                                                      ++++
+                                                                                                                                                     
+                                                                                                                                                     
+                                                                                                                                                      
+                                                                                                                                                       ++++
+                                                                                                                                                      
+                                                                                                                                                      
+                                                                                                                                                       
+                                                                                                                                                        ++++
+                                                                                                                                                        
+                                                                                                                                                         
+                                                                                                                                                          ++++
+                                                                                                                                                         
+                                                                                                                                                         
+                                                                                                                                                          
+                                                                                                                                                           ++++
+                                                                                                                                                          
+                                                                                                                                                          
+                                                                                                                                                           
+                                                                                                                                                            ++++
+                                                                                                                                                           
+                                                                                                                                                           
+                                                                                                                                                            
+                                                                                                                                                             ++++
+                                                                                                                                                            
+                                                                                                                                                            
+                                                                                                                                                             
+                                                                                                                                                              ++++
+                                                                                                                                                             
+                                                                                                                                                             
+                                                                                                                                                              
+                                                                                                                                                               ++++
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                               
+                                                                                                                                                                ++++
+                                                                                                                                                                
+                                                                                                                                                                 
+                                                                                                                                                                  ++++
+                                                                                                                                                                 
+                                                                                                                                                                 
+                                                                                                                                                                  
+                                                                                                                                                                   ++++
+                                                                                                                                                                  
+                                                                                                                                                                  
+                                                                                                                                                                   
+                                                                                                                                                                    ++++
+                                                                                                                                                                   
+                                                                                                                                                                   
+                                                                                                                                                                    
+                                                                                                                                                                     ++++
+                                                                                                                                                                    
+                                                                                                                                                                    
+                                                                                                                                                                     
+                                                                                                                                                                      ++++
+                                                                                                                                                                     
+                                                                                                                                                                     
+                                                                                                                                                                      
+                                                                                                                                                                       ++++
+                                                                                                                                                                      
+                                                                                                                                                                      
+                                                                                                                                                                       
+                                                                                                                                                                        ++++
+                                                                                                                                                                        
+                                                                                                                                                                         
+                                                                                                                                                                          ++++
+                                                                                                                                                                         
+                                                                                                                                                                         
+                                                                                                                                                                          
+                                                                                                                                                                           ++++
+                                                                                                                                                                          
+                                                                                                                                                                          
+                                                                                                                                                                           
+                                                                                                                                                                            ++++
+                                                                                                                                                                           
+                                                                                                                                                                           
+                                                                                                                                                                            
+                                                                                                                                                                             ++++
+                                                                                                                                                                            
+                                                                                                                                                                            
+                                                                                                                                                                             
+                                                                                                                                                                              ++++
+                                                                                                                                                                              
+                                                                                                                                                                              
+                                                                                                                                                                              
+                                                                                                                                                                               
+                                                                                                                                                                                - - - -
+                                                                                                                                                                               
+                                                                                                                                                                               
+                                                                                                                                                                                
+                                                                                                                                                                                 - - - -
+                                                                                                                                                                                
+                                                                                                                                                                                
+                                                                                                                                                                                 
+                                                                                                                                                                                  - - - -
+                                                                                                                                                                                 
+                                                                                                                                                                                 
+                                                                                                                                                                                  
+                                                                                                                                                                                   - - - -
+                                                                                                                                                                                  
+                                                                                                                                                                                  
+                                                                                                                                                                                   
+                                                                                                                                                                                    - - - -
+                                                                                                                                                                                    
+                                                                                                                                                                                     
+                                                                                                                                                                                      - - - -
+                                                                                                                                                                                     
+                                                                                                                                                                                     
+                                                                                                                                                                                      
+                                                                                                                                                                                       - - - -
+                                                                                                                                                                                      
+                                                                                                                                                                                      
+                                                                                                                                                                                       
+                                                                                                                                                                                        - - - -
+                                                                                                                                                                                        
+                                                                                                                                                                                        
+                                                                                                                                                                                        
+                                                                                                                                                                                         
+                                                                                                                                                                                          - - - -
+                                                                                                                                                                                         
+                                                                                                                                                                                         
+                                                                                                                                                                                          
+                                                                                                                                                                                           - - - -
+                                                                                                                                                                                          
+                                                                                                                                                                                          
+                                                                                                                                                                                           
+                                                                                                                                                                                            - - - -
+                                                                                                                                                                                            
+                                                                                                                                                                                             
+                                                                                                                                                                                              - - - -
+                                                                                                                                                                                             
+                                                                                                                                                                                             
+                                                                                                                                                                                              
+                                                                                                                                                                                               - - - -
+                                                                                                                                                                                              
+                                                                                                                                                                                              
+                                                                                                                                                                                               
+                                                                                                                                                                                                - - - -
+                                                                                                                                                                                                
+                                                                                                                                                                                                 
+                                                                                                                                                                                                  - - - -
+                                                                                                                                                                                                 
+                                                                                                                                                                                                 
+                                                                                                                                                                                                  
+                                                                                                                                                                                                   - - - -
+                                                                                                                                                                                                  
+                                                                                                                                                                                                  
+                                                                                                                                                                                                   
+                                                                                                                                                                                                    - - - -
+                                                                                                                                                                                                   
+                                                                                                                                                                                                  
+                                                                                                                                                                                                 
+                                                                                                                                                                                                
+                                                                                                                                                                                               
+                                                                                                                                                                                              
+                                                                                                                                                                                             
+                                                                                                                                                                                            
+                                                                                                                                                                                           
+                                                                                                                                                                                          
+                                                                                                                                                                                         
+                                                                                                                                                                                        
+                                                                                                                                                                                       
+                                                                                                                                                                                      
+                                                                                                                                                                                     
+                                                                                                                                                                                    
+                                                                                                                                                                                   
+                                                                                                                                                                                  
+                                                                                                                                                                                 
+                                                                                                                                                                                
+                                                                                                                                                                               
+                                                                                                                                                                              
+                                                                                                                                                                             
+                                                                                                                                                                             
+                                                                                                                                                                              
+                                                                                                                                                                               ++++
+                                                                                                                                                                              
+                                                                                                                                                                              
+                                                                                                                                                                               
+                                                                                                                                                                                ++++
+                                                                                                                                                                               
+                                                                                                                                                                              
+                                                                                                                                                                             
+                                                                                                                                                                            
+                                                                                                                                                                           
+                                                                                                                                                                          
+                                                                                                                                                                         
+                                                                                                                                                                        
+                                                                                                                                                                       
+                                                                                                                                                                      
+                                                                                                                                                                     
+                                                                                                                                                                    
+                                                                                                                                                                   
+                                                                                                                                                                  
+                                                                                                                                                                 
+                                                                                                                                                                
+                                                                                                                                                               
+                                                                                                                                                              
+                                                                                                                                                             
+                                                                                                                                                            
+                                                                                                                                                           
+                                                                                                                                                          
+                                                                                                                                                         
+                                                                                                                                                        
+                                                                                                                                                       
+                                                                                                                                                      
+                                                                                                                                                     
+                                                                                                                                                    
+                                                                                                                                                   
+                                                                                                                                                  
+                                                                                                                                                 
+                                                                                                                                                
+                                                                                                                                               
+                                                                                                                                              
+                                                                                                                                             
+                                                                                                                                            
+                                                                                                                                           
+                                                                                                                                          
+                                                                                                                                         
+                                                                                                                                        
+                                                                                                                                       
+                                                                                                                                      
+                                                                                                                                     
+                                                                                                                                    
+                                                                                                                                   
+                                                                                                                                  
+                                                                                                                                 
+                                                                                                                                
+                                                                                                                                
+                                                                                                                                
+                                                                                                                                
+                                                                                                                                 
+                                                                                                                                  UI thread
+                                                                                                                                 
+                                                                                                                                
+                                                                                                                               
+                                                                                                                              
+                                                                                                                             
+                                                                                                                            
+                                                                                                                           
+                                                                                                                          
+                                                                                                                         
+                                                                                                                        
+                                                                                                                       
+                                                                                                                      
+                                                                                                                     
+                                                                                                                    
+                                                                                                                   
+                                                                                                                  
+                                                                                                                 
+                                                                                                                
+                                                                                                               
+                                                                                                              
+                                                                                                             
+                                                                                                            
+                                                                                                           
+                                                                                                          
+                                                                                                         
+                                                                                                        
+                                                                                                       
+                                                                                                      
+                                                                                                     
+                                                                                                    
+                                                                                                   
+                                                                                                  
+                                                                                                 
+                                                                                                
+                                                                                               
+                                                                                              
+                                                                                             
+                                                                                            
+                                                                                           
+                                                                                          
+                                                                                         
+                                                                                        
+                                                                                       
+                                                                                      
+                                                                                     
+                                                                                    
+                                                                                   
+                                                                                  
+                                                                                 
+                                                                                
+                                                                               
+                                                                              
+                                                                             
+                                                                            
+                                                                           
+                                                                          
+                                                                         
+                                                                        
+                                                                       
+                                                                      
+                                                                     
+                                                                    
+                                                                   
+                                                                  
+                                                                 
+                                                                
+                                                               
+                                                              
+                                                             
+                                                            
+                                                           
+                                                          
+                                                         
+                                                        
+                                                       
+                                                      
+                                                     
+                                                    
+                                                   
+                                                  
+                                                 
+                                                
+                                               
+                                              
+                                             
+                                            
+                                           
+                                          
+                                         
+                                        
+                                       
+                                      
+                                     
+                                    
+                                   
+                                  
+                                 
+                                
+                               
+                              
+                             
+                            
+                           
+                          
+                         
+                        
+                       
+                      
+                     
+                    
+                   
+                  
+                 
+                
+               
+              
+             
+            
+           
+          
+         
+        
+       
+      
+     
+    
+   
+  
+ 
+ 
+ 
+
+

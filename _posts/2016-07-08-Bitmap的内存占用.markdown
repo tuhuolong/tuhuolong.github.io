@@ -1,0 +1,55 @@
+---
+layout: post
+title: "Bitmap的内存占用"
+date: 2016-07-08 13:47:00 
+comments: true
+categories: []
+tags: []
+description: "Bitmap的内存占用"
+keywords: 
+---
+
+
+ 
+  realWidth = rawWidth * (targetDensity / density);
+realHeight = rawHeight * (targetDensity / density);
+
+memory = realWidth * realHeight * pixelSize
+
+
+targetDensity: 屏幕密度
+density: 图片密度(xhdpi/xxhdpi/...)
+pixelSize: kUnknown
+           kAlpha_8 (1B)
+           kRGB_565 (2B)
+           kARGB_4444 (2B)
+           kRGBA_8888 (4B)
+           kBGRA_8888 (4B)
+           kIndex_8 (1B)
+           kGray_8 (1B)
+
+
+Bitmap.mBuffer
+  
+   
+  
+  
+   
+    Android 开发绕不过的坑：你的 Bitmap 究竟占多大内存
+   
+  
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

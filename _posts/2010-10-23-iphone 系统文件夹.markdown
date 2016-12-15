@@ -1,0 +1,79 @@
+---
+layout: post
+title: "iphone 系统文件夹"
+date: 2010-10-23 21:49:00 
+comments: true
+categories: [iphone]
+tags: [iphone]
+description: "iphone 系统文件夹"
+keywords: iphone
+---
+
+
+ 
+  1、【/Applications】
+  
+  常用软件的安装目录
+  
+  2. 【/private /var/ mobile/Media /iphone video Recorder】
+  
+  录像文件存放目录
+  
+  3、【/private /var/ mobile/Media /DCIM】
+  
+  相机拍摄的照片文件存放目录
+  
+  4、【/private/var/ mobile /Media/iTunes_Control/Music】
+  
+  iTunes上传的多媒体文件（例如MP3、MP4等）存放目录，文件没有被修改，但是文件名字被修改了，直接下载到电脑即可读取。
+  
+  5、【/private /var/root/Media/EBooks】
+  
+  电子书存放目录
+  
+  6、【/Library/Ringtones】
+  
+  系统自带的来电铃声存放目录（用iTunes将文件转换为ACC文件，把后缀名改成.m4r,用iPhone_PC_Suite传到/Library/Ringtones即可）
+  
+  7、【/private/var/ mobile /Library/AddressBook】
+  
+  系统电话本的存放目录。
+  
+  8、【/private /var/ mobile/Media /iphone Recorder】
+  
+  录音文件存放目录
+  
+  9、【/Applications/Preferences.app/zh_CN.lproj】
+  
+  软件Preferences.app的中文汉化文件存放目录
+  
+  10、【/Library/Wallpaper】
+  
+  系统墙纸的存放目录
+  
+  11、【/System/Library/Audio/UISounds】
+  
+  系统声音文件的存放目录
+  
+  12、【/private/var/root/Media/PXL】
+  
+  ibrickr上传安装程序建立的一个数据库，估计和windows的uninstall记录差不多。
+  
+  13、【/bin】
+  
+  和linux系统差不多，是系统执行指令的存放目录。
+  
+  14、【/private/var/ mobile /Library/SMS】
+  
+  系统短信的存放目录
+  
+  15、【/private/var/run】
+  
+  系统进程运行的临时目录？（查看这里可以看到系统启动的所有进程）
+  
+  16、【/private/var/logs/CrashReporter】
+  
+  系统错误记录报告
+ 
+
+

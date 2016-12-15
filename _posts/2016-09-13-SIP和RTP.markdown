@@ -1,0 +1,39 @@
+---
+layout: post
+title: "SIP和RTP"
+date: 2016-09-13 11:22:00 
+comments: true
+categories: []
+tags: []
+description: "SIP和RTP"
+keywords: 
+---
+
+
+ 
+  
+   
+  
+  SIP is the core protocol for initiating, managing and terminating sessions in the Internet
+These sessions may be text, voice, video or a combination of these
+SIP sessions involve one or more participants and can use unicast or multicast communication.
+  
+   
+    SILK:一种视频编码协议
+   
+  
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

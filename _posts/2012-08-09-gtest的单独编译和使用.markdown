@@ -1,0 +1,115 @@
+---
+layout: post
+title: "gtest的单独编译和使用"
+date: 2012-08-09 17:35:00 
+comments: true
+categories: [makefile]
+tags: [makefile]
+description: "gtest的单独编译和使用"
+keywords: makefile
+---
+
+
+ 
+  
+   
+    1.      编译
+   
+  
+ 
+ 
+  
+   我们项目所用的编译器：arm-linux-androideabi-g++及其相应工具链
+  
+ 
+ 
+  
+   从
+   
+    http://code.google.com/p/googletest/downloads/detail?name=gtest-1.6.0.zip
+   
+   处获取gtest-1.6.0.zip
+  
+ 
+ 
+  
+   a)     下载解压后，需更新build-aux目录下的 config.sub 。此为必须，否则将不能识别arm-linux-androideabi工具链。Config.sub可从
+   
+    http://gcc.gnu.org/svn/gcc/branches/cilkplus/config.sub
+   
+   获取。
+  
+ 
+ 
+  
+   b)     然后执行./configure -host=arm-linux-androideabi
+  
+ 
+ 
+  
+   c)      此后会生成Makefile 文件， 接着我们需要编辑Makefile文件， 改动CXXFLAGS为     CXXFLAGS = -g -O2 –DANDROID  。 此为必须，否则编译不能通过。
+  
+ 
+ 
+  
+   d)     最后执行make ，  在lib/.lib/目录下生成了libgtest.a文件。
+  
+ 
+ 
+  
+  
+ 
+ 
+  
+   
+    2.      使用
+   
+  
+ 
+ 
+  
+   假设项目只有两个文件: a.cpp；main.cpp 。
+  
+ 
+ 
+  
+   a)     a.cpp 为主要被测文件，为此我们创建了一个测试文件，其中包含对a.cpp的测试例，命名为a_unittest.cpp。
+  
+ 
+ 
+  
+   b)     修改main函数为如下：
+  
+ 
+ 
+  
+   int _tmain(int argc, wchar_t* argv[])
+  
+ 
+ 
+  
+   {
+  
+ 
+ 
+  
+   testing::InitGoogleTest(&argc,argv);
+  
+ 
+ 
+  
+   returnRUN_ALL_TESTS();
+  
+ 
+ 
+  
+   }
+  
+ 
+ 
+  
+   c)      修改被测项目的Makefile ，一使其包含gtest的include目录。二使其在link时，需加上libgtest.a文件，即最终可执行文件应为如下link而成： a.o + main.o  + a_unittest.o+ libgtest.a
+  
+ 
+
+

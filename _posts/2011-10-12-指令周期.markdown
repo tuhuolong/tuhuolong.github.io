@@ -1,0 +1,46 @@
+---
+layout: post
+title: "指令周期"
+date: 2011-10-12 15:26:00 
+comments: true
+categories: []
+tags: []
+description: "指令周期"
+keywords: 
+---
+
+
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   取指令
+  
+  (FI)->;
+  
+   译码
+  
+  指令(DI)->;
+  
+   计算操作数
+  
+  (CO)->;
+  
+   取操作数
+  
+  (FO)->;
+  
+   执行
+  
+  指令(EI)->;
+  
+   写操作数
+  
+  (WO)
+ 
+
+

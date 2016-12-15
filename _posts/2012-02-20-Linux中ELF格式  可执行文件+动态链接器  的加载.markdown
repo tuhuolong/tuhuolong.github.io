@@ -1,0 +1,63 @@
+---
+layout: post
+title: "Linux中ELF格式  可执行文件+动态链接器  的加载"
+date: 2012-02-20 15:46:00 
+comments: true
+categories: [linux]
+tags: [linux]
+description: "Linux中ELF格式  可执行文件+动态链接器  的加载"
+keywords: linux
+---
+
+
+ 
+  
+   两种加载方式
+  
+ 
+ 
+  
+   (1)加载可执行文件，通过
+   
+    PT_INTERP加载动态链接器
+   
+  
+ 
+ 
+  
+   (2)直接加载动态链接器,再由其加载可执行文件
+  
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   On a typical ELF system such as Linux, the kernel is normally responsible for loading both the executable and the dynamic linker. The executable is invoked by filename
+ with execve(). The kernel loads the executable into the process, and looks for a PT_INTERP entry in its ELF Program Headers; this specifies the filename of the dynamic linker (/lib/ld-linux.so.2 for glibc on Linux). If there is a PT_INTERP entry, the kernel
+ loads this file too.
+  
+ 
+ 
+  
+   Either of these two ELF objects can be relocatable (ET_DYN) or require loading at a fixed position in address space (ET_EXEC). Most often, the dynamic linker is relocatable
+ and the executable is fixed-position with a standard base address (0x08048000 on i386). Sometimes the executable is relocatable too (these are known as PIEs - position-independent executables). For relocatable objects, the kernel chooses the load address.
+  
+ 
+ 
+  
+   There is another way to load the two ELF objects: the dynamic linker can be invoked directly with execve(). If passed the filename of an executable, the dynamic linker
+ will load the executable itself.
+  
+ 
+
+

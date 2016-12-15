@@ -1,0 +1,29 @@
+---
+layout: post
+title: "OAuth授权协议(第三方不用密码获得授权): 密码不安全+不好控制"
+date: 2015-12-22 21:48:00 
+comments: true
+categories: []
+tags: []
+description: "OAuth授权协议(第三方不用密码获得授权): 密码不安全+不好控制"
+keywords: 
+---
+
+
+ 
+  OAuth授权协议(第三方不用密码也能获得授权)
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

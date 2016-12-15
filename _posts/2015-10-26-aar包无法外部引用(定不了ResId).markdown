@@ -1,0 +1,29 @@
+---
+layout: post
+title: "aar包无法外部引用(定不了ResId)"
+date: 2015-10-26 21:50:00 
+comments: true
+categories: []
+tags: []
+description: "aar包无法外部引用(定不了ResId)"
+keywords: 
+---
+
+
+ 
+  aar包无法外部引用(定不了ResId)
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

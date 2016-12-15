@@ -1,0 +1,35 @@
+---
+layout: post
+title: "【Avalon】绑定块(监听器):管理每一个绑定"
+date: 2014-01-05 12:37:00 
+comments: true
+categories: []
+tags: []
+description: "【Avalon】绑定块(监听器):管理每一个绑定"
+keywords: 
+---
+
+
+ 
+  var binding = {
+  
+   type: type,
+   
+    param: match[2] || "",
+    
+     element: elem,
+     
+      name: match[0],
+      
+       value: attr.nodeValue
+       
+        }
+       
+      
+     
+    
+   
+  
+ 
+
+

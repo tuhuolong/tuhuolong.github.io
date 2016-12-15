@@ -1,0 +1,31 @@
+---
+layout: post
+title: "Debug.startMethodTracing Debug.stopMethodTracing TraceView"
+date: 2015-07-16 10:42:00 
+comments: true
+categories: []
+tags: []
+description: "Debug.startMethodTracing Debug.stopMethodTracing TraceView"
+keywords: 
+---
+
+
+ 
+  
+   TraceView
+  
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

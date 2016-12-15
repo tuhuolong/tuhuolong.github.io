@@ -1,0 +1,14 @@
+---
+layout: post
+title: "访问变量-作用域链 访问属性-原型链"
+date: 2013-12-03 20:00:00 
+comments: true
+categories: []
+tags: []
+description: "访问变量-作用域链 访问属性-原型链"
+keywords: 
+---
+
+
+
+

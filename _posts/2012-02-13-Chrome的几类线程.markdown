@@ -1,0 +1,115 @@
+---
+layout: post
+title: "Chrome的几类线程"
+date: 2012-02-13 14:03:00 
+comments: true
+categories: [chrome]
+tags: [chrome]
+description: "Chrome的几类线程"
+keywords: chrome
+---
+
+
+ enum ID {
+ 
+  // The main thread in the browser.
+  
+   
+    UI
+   
+   ,
+   
+    
+     // This is the thread that interacts with the database.
+     
+      
+       DB
+      
+      ,
+      
+       
+        // This is the "main" thread for WebKit within the browser process when
+        
+         // NOT in --single-process mode.
+         
+          
+           WEBKIT
+          
+          ,
+          
+           
+            // This is the thread that interacts with the file system.
+            
+             
+              FILE
+             
+             ,
+             
+              
+               // Used for file system operations that block user interactions.
+               
+                // Responsiveness of this thread affect users.
+                
+                 
+                  FILE_USER_BLOCKING
+                 
+                 ,
+                 
+                  
+                   // Used to launch and terminate Chrome processes.
+                   
+                    
+                     PROCESS_LAUNCHER
+                    
+                    ,
+                    
+                     
+                      // This is the thread to handle slow HTTP cache operations.
+                      
+                       
+                        CACHE
+                       
+                       ,
+                       
+                        
+                         // This is the thread that processes IPC and network messages.
+                         
+                          
+                           IO
+                          
+                          
+                           
+                            }
+                            
+                             
+                             
+                            
+                           
+                          
+                         
+                        
+                       
+                      
+                     
+                    
+                   
+                  
+                 
+                
+               
+              
+             
+            
+           
+          
+         
+        
+       
+      
+     
+    
+   
+  
+ 
+
+

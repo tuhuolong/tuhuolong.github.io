@@ -1,0 +1,115 @@
+---
+layout: post
+title: "OpenSSL常用命令"
+date: 2015-01-14 02:16:00 
+comments: true
+categories: []
+tags: []
+description: "OpenSSL常用命令"
+keywords: 
+---
+
+
+ 
+ 
+ 
+  
+  
+ 
+ 
+  
+   openssl genrsa -out test.key 1024
+  
+ 
+ 
+  
+   openssl rsa -in test.key -pubout -out test.pub_key
+  
+ 
+ 
+  
+   openssl pkcs8 -topk8 -inform PEM -outform DER -in test.key -nocrypt | base64
+  
+ 
+ 
+  
+   openssl dgst -sha256 test.h5 | openssl rsautl -sign -inkey test.key -keyform PEM | base64
+  
+ 
+ 
+  
+   openssl dgst -sha256 -sign test.key -out h5.sign test.h5
+  
+ 
+ 
+  
+   openssl dgst -sha256 -verify test.pub_key -signature h5.sign test.zip
+  
+ 
+ 
+  
+   openssl dgst -sha256 -sign test.key test.h5|base64
+  
+ 
+ 
+  
+   openssl rsa -in test.key -text
+  
+ 
+ 
+  
+   openssl pkcs7 -inform DER -in CERT.RSA -noout -print_certs -text (打印CERT.RSA中的证书)
+  
+ 
+ 
+  
+  
+ 
+ 
+  
+   
+   
+  
+  
+   
+   
+  
+  
+   
+    
+    
+   
+  
+  
+   
+   
+  
+  
+   
+   
+  
+  
+   
+    
+    
+   
+  
+  
+   
+   
+  
+  
+   
+   
+  
+  
+   
+   
+  
+  
+   
+   
+  
+ 
+
+

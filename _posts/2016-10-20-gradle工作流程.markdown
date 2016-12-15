@@ -1,0 +1,34 @@
+---
+layout: post
+title: "gradle工作流程"
+date: 2016-10-20 15:06:00 
+comments: true
+categories: []
+tags: []
+description: "gradle工作流程"
+keywords: 
+---
+
+
+ 
+  
+   
+  
+  
+   gradle workflow
+  
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

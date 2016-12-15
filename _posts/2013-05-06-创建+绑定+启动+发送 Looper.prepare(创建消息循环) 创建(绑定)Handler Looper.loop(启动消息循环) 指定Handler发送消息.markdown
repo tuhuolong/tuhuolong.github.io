@@ -1,0 +1,18 @@
+---
+layout: post
+title: "创建+绑定+启动+发送 Looper.prepare(创建消息循环) 创建(绑定)Handler Looper.loop(启动消息循环) 指定Handler发送消息"
+date: 2013-05-06 12:57:00 
+comments: true
+categories: []
+tags: []
+description: "创建+绑定+启动+发送 Looper.prepare(创建消息循环) 创建(绑定)Handler Looper.loop(启动消息循环) 指定Handler发送消息"
+keywords: 
+---
+
+
+ 
+  
+  
+ 
+
+

@@ -1,0 +1,800 @@
+---
+layout: post
+title: "Java 注解"
+date: 2010-10-11 14:30:00 
+comments: true
+categories: [java]
+tags: [java]
+description: "Java 注解"
+keywords: java
+---
+
+
+ 
+  
+   阅读提示：文中提到的程序成员或者程序元素是一个概念，指组成程序代码的单元：如类、方法、成员变
+量。
+  
+  
+  
+  
+   一、Annotation究竟是什么？
+  
+  
+  
+  Annotation
+提供了一条与程序元素关联任何信息或者任何元数据（metadata）的途径。从某些方面看，annotation就像修饰符一样被使用，并应用于包、类
+型、构造方法、方法、成员变量、参数、本地变量的声明中。这些信息被存储在annotation的“name=value”结构对中。
+annotation类型是一种接口，能够通过java反射API的方式提供对其信息的访问。
+  
+  
+  annotation能被用来为某个程序元
+素（类、方法、成员变量等）关联任何的信息。需要注意的是，这里存在着一个基本的潜规则：annotaion不能影响程序代码的执行，无论增加、删除
+annotation，代码都始终如一的执行。另外，尽管一些annotation通过java的反射api方法在运行时被访问，而java语言解释器在
+工作时忽略了这些annotation。正是由于java虚拟机忽略了annotation，导致了annotation类型在代码中是“不起作用”的；
+只有通过某种配套的工具才会对annotation类型中的信息进行访问和处理。本文中将涵盖标准的annotation和meta-
+annotation类型，陪伴这些annotation类型的工具是java编译器（当然要以某种特殊的方式处理它们）。
+  
+  
+  由于上述原
+因，annotation在使用时十分简便。一个本地变量可以被一个以NonNull命名的annotation类型所标注，来作为对这个本地变量不能被
+赋予null值的断言。而我们可以编写与之配套的一个annotation代码分析工具，使用它来对具有前面变量的代码进行解析，并且尝试验证这个断言。
+当然这些代码并不必自己编写。在JDK安装后，在JDK/bin目录中可以找到名为“apt”的工具，它提供了处理annotation的框架：它启动后
+扫描源代码中的annotation，并调用我们定义好的annotation处理器完成我们所要完成的工作（比如验证前面例子中的断言）。说到这里，
+annotation的强大功能似乎可以替代XDoclet这类的工具了，随着我们的深入，大家会更加坚信这一点。
+  
+  注：详细描述请参看jsr250规范：
+  
+  
+   http://www.jcp.org/aboutJava/communityprocess/pfd/jsr250/
+  
+  
+  
+  
+   二、Annotation的定义：
+  
+  
+  
+  这
+段文字开始介绍annotation相关技术。在此大家将看到java5.0的标准annotation类型，这种标准类型就是前文中所说的“内建”类
+型，它们可以直接被javac支持。可喜的是，在java6.0beta版中的javac已经加入了对自定义annotation的支持。
+  
+  
+  
+   1。Annotation的概念和语法：
+  
+  
+  
+  首先，关键的概念是理解annotation是与一个程序元素相关联信息或者元数据的标注。它从不影响java程序的执行，但是对例如编译器警告或者像文
+档生成器等辅助工具产生影响。
+  
+  
+  下面是常用的annotation列表，我们应该注意在annotation和annotation类型之间的不同：
+  
+  
+  
+   A.annotation：
+  
+  
+  annotation
+使用了在java5.0所带来的新语法，它的行为十分类似public、final这样的修饰符。每个annotation具有一个名字和成员个数
+>;=0。每个annotation的成员具有被称为name=value对的名字和值（就像javabean一样），name=value装载了
+annotation的信息。
+  
+  
+  
+   B.annotation类型：
+  
+  
+  annotation
+类型定义了annotation的名字、类型、成员默认值。一个annotation类型可以说是一个特殊的java接口，它的成员变量是受限制的，而声
+明annotation类型时需要使用新语法。当我们通过java反射api访问annotation时，返回值将是一个实现了该annotation类
+型接口的对象，通过访问这个对象我们能方便的访问到其annotation成员。后面的章节将提到在java5.0的java.lang包里包含的3个标
+准annotation类型。
+  
+  
+  
+   C.annotation成员：
+  
+  
+  annotation
+的成员在annotation类型中以无参数的方法的形式被声明。其方法名和返回值定义了该成员的名字和类型。在此有一个特定的默认语法：允许声明任何
+annotation成员的默认值：一个annotation可以将name=value对作为没有定义默认值的annotation成员的值，当然也可
+以使用name=value对来覆盖其它成员默认值。这一点有些近似类的继承特性，父类的构造函数可以作为子类的默认构造函数，但是也可以被子类覆盖。
+  
+  
+  
+   D.marker annotation类型：
+  
+  
+  一个没有成员定义的annotation类型被称为marker 
+annotation。这种annotation类型仅使用自身的存在与否来为我们提供信息。如后面要说的Override。
+  
+  
+  
+   E.meta-annotation：
+  
+  
+  meta
+-annotation也称为元annotation，它是被用来声明annotation类型的annotation。Java5.0提供了一些标准的
+元-annotation类型。下面介绍的target、retention就是meta-annotation。
+  
+  
+  
+   F.target：
+  
+  
+  annotation
+的target是一个被标注的程序元素。target说明了annotation所修饰的对象范围：annotation可被用于packages、
+types（类、接口、枚举、annotation类型）、类型成员（方法、构造方法、成员变量、枚举值）、方法参数和本地变量（如循环变量、catch
+参数）。在annotation类型的声明中使用了target可更加明晰其修饰的目标。
+  
+  
+  
+   G.retention：
+  
+  
+  annotation
+的retention定义了该annotation被保留的时间长短：某些annotation仅出现在源代码中，而被编译器丢弃；而另一些却被编译在
+class文件中；编译在class文件中的annotation可能会被虚拟机忽略，而另一些在class被装载时将被读取（请注意并不影响class
+的执行，因为annotation与class在使用上是被分离的）。使用这个meta-annotation可以对annotation的“生命周期”
+限制。
+  
+  
+  
+   H.metadata：
+  
+  
+  由于metadata被广泛使用于各种计算机开发过程中，所以当我们在这里谈论的metadata即元数据通常指被annotation装载的信息或者
+annotation本身。
+  
+  
+  
+   2。使用标准Annotation：
+  
+  
+  java5.0在java.lang包中定义了3种标准的annotation类型：
+  
+  
+  
+   A.Override：
+  
+  
+  java.lang.Override
+是一个marker
+annotation类型，它被用作标注方法。它说明了被标注的方法重载了父类的方法，起到了断言的作用。如果我们使用了这种annotation在一个
+没有覆盖父类方法的方法时，java编译器将以一个编译错误来警示。
+  
+  这个annotaton常常在我们试图覆盖父类方法而确又写错了方法名时发挥威力。
+  
+  
+  使用方法极其简单：在使用此annotation时只要在被修饰的方法前面加上@Override。
+  
+  下面的代码是一个使用@Override修饰一个企图重载父类的toString方法，而又存在拼写错误的sample：
+  
+  
+   清单1：
+  
+ 
+ 
+
+@Override
+
+public String toSting() {   // 注意方法名拼写错了
+
+    return "[" + super.toString() + "]";
+
+}
+
+
+ 
+  
+  
+  
+   B.Deprecated：
+  
+  
+  同
+样Deprecated也是一个marker
+annotation。当一个类型或者类型成员使用@Deprecated修饰的话，编译器将不鼓励使用这个被标注的程序元素。而且这种修饰具有一定的
+“延续性”：如果我们在代码中通过继承或者覆盖的方式使用了这个过时的类型或者成员，虽然继承或者覆盖后的类型或者成员并不是被声明为
+@Deprecated，但编译器仍然要报警。
+  
+  值得注意，@Deprecated这个annotation类型和javadoc中的
+@deprecated这个tag是有区别的：前者是java编译器识别的，而后者是被javadoc工具所识别用来生成文档（包含程序成员为什么已经过
+时、它应当如何被禁止或者替代的描述）。
+  
+  在java5.0，java编译器仍然象其从前版本那样寻找@deprecated这个javadoc
+tag，并使用它们产生警告信息。但是这种状况将在后续版本中改变，我们应在现在就开始使用@Deprecated来修饰过时的方法而不是
+@deprecated javadoc tag。
+  
+  
+   清单2：
+  
+ 
+ 
+
+下面是一段使用@Deprecated的代码：
+
+/**
+
+* 这里是javadoc的@deprecated声明.
+
+* @deprecated No one has players for this format any more.  Use VHS instead.
+
+*/
+
+@Deprecated public class Betamax { ... }
+
+
+ 
+  
+  
+  
+   C.SuppressWarnings：
+  
+  
+  @SuppressWarnings
+被用于有选择的关闭编译器对类、方法、成员变量、变量初始化的警告。在java5.0，sun提供的javac编译器为我们提供了-Xlint选项来使编
+译器对合法的程序代码提出警告，此种警告从某种程度上代表了程序错误。例如当我们使用一个generic
+collection类而又没有提供它的类型时，编译器将提示出"unchecked warning"的警告。
+  
+  
+  通常当这种情况发生时，我们就需要查找引起警告的代码。如果它真的表示错误，我们就需要纠正它。例如如果警告信息表明我们代码中的switch语句没有覆
+盖所有可能的case，那么我们就应增加一个默认的case来避免这种警告。
+  
+  相
+仿，有时我们无法避免这种警告，例如，我们使用必须和非generic的旧代码交互的generic
+collection类时，我们不能避免这个unchecked
+warning。此时@SuppressWarning就要派上用场了，在调用的方法前增加@SuppressWarnings修饰，告诉编译器停止对此
+方法的警告。
+  
+  SuppressWarning不是一个marker
+annotation。它有一个类型为String[]的成员，这个成员的值为被禁止的警告名。对于javac编译器来讲，被-Xlint选项有效的警告
+名也同样对@SuppressWarings有效，同时编译器忽略掉无法识别的警告名。
+  
+  
+  annotation语法允许在annotation名后跟括号，括号中是使用逗号分割的name=value对用于为annotation的成员赋值：
+  
+  
+   清单3：
+  
+ 
+ 
+
+@SuppressWarnings(value={"unchecked","fallthrough"})
+
+public void lintTrap() { /* sloppy method body omitted */ }
+
+
+ 
+  
+  
+  在这个例子中SuppressWarnings 
+annotation类型只定义了一个单一的成员，所以只有一个简单的value={...}作为name=value对。又由于成员值是一个数组，故使
+用大括号来声明数组值。
+  
+  
+  注意：我们可以在下面的情况中缩写annotation：当annotation只有单一成员，并成员命名为"value="。这时可以省
+去"value="。比如将上面的SuppressWarnings annotation进行缩写：
+  
+  
+   清单4：
+  
+ 
+ 
+
+@SuppressWarnings({"unchecked","fallthrough"})
+
+
+ 
+  
+  如果SuppressWarnings所声明的被禁止警告个数为一个时，可以省去大括号：
+ 
+ 
+
+@SuppressWarnings("unchecked")
+
+
+ 
+  
+  
+  
+   3。Annotation语法：
+  
+  
+  
+  在上一个章节中，我们看到书写marker annotation和单一成员annotation的语法。下面本人来介绍一下完整的语法：
+  
+  
+  annotation
+由“@+annotation类型名称+(..逗号分割的name-value对...)”组成。其中成员可以按照任何的顺序。如果annotation
+类型定义了某个成员的默认值，则这个成员可以被省略。成员值必须为编译时常量、内嵌的annotation或者数组。
+  
+  
+  下面我们将定义一个
+annotation类型名为Reviews，它有一个由@Review annotation数组构成的成员。这个@Review
+annotation类型有三个成员："reviewer"是一个字符串，"comment"
+是一个具有默认值的可选的字符串，"grade"是一个Review.Grade枚举类型值。
+  
+  
+   清单5：
+  
+ 
+ 
+
+@Reviews({  // Single-value annotation, so "value=" is omitted here
+
+    @Review(grade=Review.Grade.EXCELLENT,
+
+            reviewer="df"),
+
+    @Review(grade=Review.Grade.UNSATISFACTORY,
+
+            reviewer="eg",
+
+            comment="This method needs an @Override annotation")
+
+})
+
+
+ 
+  
+  annotation语法的另一个重要规则是没有程序成员可以有多于一个的同一annotation实例。例如在一个类中简单的放置多个@Review 
+annotation。这也是在上面代码中定义@Reviews annotation类型数组的原因。
+  
+  
+  
+   4。Annotation成员类型和值：
+  
+  
+  
+  annotation成员必须是非空的编译时常量表达式。可用的成员类型为：primitive类型、, String, Class, 
+enumerated类型, annotation类型, 和前面类型的数组。
+  
+  
+  下面我们定义了一个名为UncheckedExceptions 
+的annotation类型，它的成员是一个扩展了RuntimeException类的类数组。
+  
+  
+   清单6：
+  
+ 
+ 
+
+@UncheckedExceptions({
+
+    IllegalArgumentException.class, StringIndexOutOfBoundsException.class
+
+})
+
+
+ 
+  
+  
+  
+   5。Annotation的目标：
+  
+  
+  
+  annotation通常被放在类型定义和成员定义的前面。然而它也出现在package、方法参数、本地变量的前面。下面，我们来讨论一下这些不大常用
+的写法：
+  
+  
+  package annotation出现在package声明的前面。
+  
+  下面的例子package-info.java中不包含任何的公共类型定义，却包含一个可选的javadoc注释。
+  
+  
+   清单7：
+  
+ 
+ 
+
+/**
+
+* This package holds my custom annotation types.
+
+*/
+
+@com.davidflanagan.annotations.Author("David Flanagan")
+
+package com.davidflanagan.annotations;
+
+
+ 
+  
+  当package
+-info.java文件被编译时，它将产生名为包含annotation（特殊的接口）声明的package-info.class的类。这个接口没有
+成员，它的名字package-info不是一个合法的java标识，所以它不能用在java源代码中。这个接口的存在只是简单的被看作一个为
+package annotation准备的占位符。
+  
+  
+  用于修饰方法参数、catch参数、本地变量的annotation只是简单的出现
+在这些程序成员的修饰符位置。java类文件格式没有为本地变量或者catch参数存储annotation作准备，所以这些annotation总是保
+留在源代码级别（source retention）；方法参数annotation能够保存在类文件中，也可以在保留到运行时。
+  
+  
+  最后，请注意，枚举类型定义中不允许任何的修饰符修饰其枚举值。
+  
+  
+  
+   6。Annotation和默认值：
+  
+  
+  在Annotation
+中，没有默认值的成员必须有一个成员值。而如何理解默认值是如何被处理就是一个很重要的细节：annotation类型所定义的成员默认值被存储在
+class文件中，不被编译到annotation里面。如果我们修改一个annotation类型使其成员的默认值发生了改变，这个改变对于所有此类型
+的annotation中没有明确提供成员值的成员产生影响（即修改了该成员的成员值）。即使在annotation类型使其成员的默认值被改变后
+annotation从没被重新编译过，该类型的annotation(改变前已经被编译的)也受到影响。
+  
+  
+  
+   三、Annotation工作原理：
+  
+  
+  
+  
+   Annotation与反射
+  
+  
+  在java5.0
+中Java.lang.reflect提供的反射API被扩充了读取运行时annotation的能力。让我们回顾一下前面所讲的：一个
+annotation类型被定义为runtime
+retention后，它才是在运行时可见，当class文件被装载时被保存在class文件中的annotation才会被虚拟机读取。那么
+reflect是如何帮助我们访问class中的annotation呢？
+  
+  
+  下文将在java.lang.reflect用于
+annotation的新特性，其中java.lang.reflect.AnnotatedElement是重要的接口，它代表了提供查询
+annotation能力的程序成员。这个接口被java.lang.Package、java.lang.Class实现，并间接地被Method类、
+Constructor类、java.lang.reflect的Field类实现。而annotation中的方法参数可以通过Method类、
+Constructor类的getParameterAnnotations()方法获得。
+  
+  
+  下面的代码使用了AnnotatedElement类的isAnnotationPresent()方法判断某个方法是否具有@Unstable 
+annotation，从而断言此方法是否稳定：
+  
+  
+   清单8：
+  
+ 
+ 
+
+import java.lang.reflect.*;
+
+
+
+Class c = WhizzBangClass.class;                           
+
+Method m = c.getMethod("whizzy", int.class, int.class);  
+
+boolean unstable = m.isAnnotationPresent(Unstable.class);
+
+
+ 
+  
+  isAnnotationPresent
+()方法对于检查marker annotation是十分有用的，因为marker
+annotation没有成员变量，所以我们只要知道class的方法是否使用了annotation修饰就可以了。而当处理具有成员的
+annotation时，我们通过使用getAnnotation()方法来获得annotation的成员信息（成员名称、成员值）。这里我们看到了一
+套优美的java
+annotation系统：如果annotation存在，那么实现了相应的annotation类型接口的对象将被getAnnotation()方法
+返回，接着调用定义在annotation类型中的成员方法可以方便地获得任何成员值。
+  
+  
+  回想一下，前面介绍的@Reviews annotation，如果这个annotation类型被声明为runtime 
+retention的话，我们通过下面的代码来访问@Reviews annotation的成员值：
+  
+  
+   清单9：
+  
+ 
+ 
+
+AnnotatedElement target = WhizzBangClass.class; //获得被查询的AnnotatedElement
+
+// 查询AnnotatedElement的@Reviews annotation信息
+
+Reviews annotation = target.getAnnotation(Reviews.class);
+
+// 因为@Reviews annotation类型的成员为@Review annotation类型的数组，
+
+// 所以下面声明了Review[] reviews保存@Reviews annotation类型的value成员值。
+
+Review[] reviews = annotation.value();
+
+// 查询每个@Review annotation的成员信息
+
+for(Review r : reviews) {
+
+    Review.Grade grade = r.grade();
+
+    String reviewer = r.reviewer();
+
+    String comment = r.comment();
+
+    System.out.printf("%s assigned a grade of %s and comment '%s'%n",
+
+                      reviewer, grade, comment);
+
+}
+
+
+ 
+  
+  
+  
+   四、如何自定义Annotation？
+  
+  
+  
+  
+   1．详解annotation与接口的异同：
+  
+  
+  因为annotation类型是一个非凡的接口，所以两者之间存在着某些差异：
+  
+  
+  
+   A.Annotation类型使用关键字@interface而不是interface。
+  
+  
+  这个关键字声明隐含了一个信息：它是继承了java.lang.annotation.Annotation接口，并非声明了一个interface。
+  
+  
+  
+   B.Annotation类型、方法定义是独特的、受限制的。
+  
+  
+  Annotation
+类型的方法必须声明为无参数、无异常抛出的。这些方法定义了annotation的成员：方法名成为了成员名，而方法返回值成为了成员的类型。而方法返回
+值类型必须为primitive类型、Class类型、枚举类型、annotation类型或者由前面类型之一作为元素的一维数组。方法的后面可以使用
+default和一个默认数值来声明成员的默认值，null不能作为成员默认值，这与我们在非annotation类型中定义方法有很大不同。
+  
+  Annotation类型和它的方法不能使用annotation类型的参数、成员不能是generic。只有返回值类型是Class的方法可以在
+annotation类型中使用generic，因为此方法能够用类转换将各种类型转换为Class。
+  
+  
+  
+   C.Annotation类型又与接口有着近似之处。
+  
+  
+  它们可以定义常量、静态成员类型（比如枚举类型定义）。Annotation类型也可以如接口一般被实现或者继承。
+  
+  
+  
+   2．实例：
+  
+  
+  下面，我们将看到如何定义annotation类型的example。它展示了annotation类型声明以及@interface与
+interface之间的不同：
+  
+  
+   清单10：
+  
+ 
+ 
+
+package com.davidflanagan.annotations;
+
+import java.lang.annotation.*;
+
+
+
+/**
+
+* 使用annotation来描述那些被标注的成员是不稳定的，需要更改
+
+*/
+
+@Retention(RetentionPolicy.RUNTIME)
+
+public @interface Unstable {}
+
+
+ 
+  
+  
+  下面的另一个example只定义了一个成员。并通过将这个成员命名为value，使我们可以方便的使用这种annotation的快捷声明方式：
+  
+  
+   清单11：
+  
+ 
+ 
+
+/**
+
+* 使用Author这个annotation定义在程序中指出代码的作者
+
+*/
+
+public @interface Author {
+
+    /** 返回作者名 */
+
+    String value();
+
+}
+
+
+ 
+  
+  
+  以
+下的example更加复杂。Reviews annotation类型只有一个成员，但是这个成员的类型是复杂的：由Review
+annotation组成的数组。Review
+annotation类型有3个成员：枚举类型成员grade、表示Review名称的字符串类型成员Reviewer、具有默认值的字符串类型成员
+Comment。
+  
+  
+   清单12：
+  
+ 
+ 
+
+import java.lang.annotation.*;
+
+        
+
+/**
+
+* Reviews annotation类型只有一个成员，
+
+* 但是这个成员的类型是复杂的：由Review annotation组成的数组
+
+*/
+
+@Retention(RetentionPolicy.RUNTIME)
+
+public @interface Reviews {
+
+    Review[] value();
+
+}
+
+
+
+/**
+
+* Review annotation类型有3个成员： 
+
+* 枚举类型成员grade、
+
+  * 表示Review名称的字符串类型成员Reviewer、
+
+  * 具有默认值的字符串类型成员Comment。
+
+*/
+
+public @interface Review {
+
+    // 内嵌的枚举类型
+
+    public static enum Grade { EXCELLENT, SATISFACTORY, UNSATISFACTORY };
+
+
+
+    // 下面的方法定义了annotation的成员
+
+    Grade grade();                
+
+    String reviewer();          
+
+    String comment() default "";  
+
+}
+
+
+ 
+  
+  
+  最
+后，我们来定义一个annotation方法用于罗列出类运行中所有的unchecked异常（上文已经提到这种情况不一定是错误）。这个
+annotation类型将一个数组作为了唯一的成员。数组中的每个元素都是异常类。为了加强对未检查的异常（此类异常都是在运行时抛出）进行报告，我们
+可以在代码中对异常的类型进行限制：
+  
+  
+   清单13：
+  
+ 
+ 
+
+public @interface UncheckedExceptions {
+
+    Class<? extends RuntimeException>;[] value();
+
+}
+
+
+ 
+  
+  
+  
+   五、Meta-Annotation
+  
+  
+  
+  Annotation
+类型可以被它们自己所标注。Java5.0定义了4个标准的meta-annotation类型，它们被用来提供对其它annotation类型作说明。
+这些类型和它们所支持的类在java.lang.annotation包中可以找到。如果需要更详细的信息可以参考jdk5.0手册。
+  
+  
+  
+   1．再谈Target
+  
+  
+  作
+为meta-annotation类型的Target,它描述了annotation所修饰的程序成员的类型。当一个annotation类型没有
+Target时，它将被作为普通的annotation看待。当将它修饰一个特定的程序成员时，它将发挥其应用的作用，例如：Override用于修饰方
+法时，增加了@Target这个meta-annotation就使编译器对annotation作检查，从而去掉修饰错误类型的Override。
+  
+  
+  Target 
+meta-annotation类型有唯一的value作为成员。这个成员的类型是
+java.lang.annotation.ElementType[]类型的，ElementType类型是可以被标注的程序成员的枚举类型。
+  
+  
+  
+   2．Retention的用法
+  
+  
+  我
+们在文章的开头曾经提到过Retention，但是没有详细讲解。Retention描述了annotation是否被编译器丢弃或者保留在class文
+件；如果保留在class文件中，是否在class文件被装载时被虚拟机读取。默认情况下，annotation被保存在class文件中，但在运行时并
+不能被反射访问。Retention具有三个取值：source、class、runtime，这些取值来自
+java.lang.annotation.RetentionPolicy的枚举类型值。
+  
+  
+  Retention 
+meta-annotation类型有唯一的value作为成员，它的取值来自
+java.lang.annotation.RetentionPolicy的枚举类型值。
+  
+  
+  
+   3．Documented
+  
+  
+  Documented是一个meta-annotation类型，用于描述其它类型的annotation应该被作为被标注的程序成员的公共API，因此
+可以被例如javadoc此类的工具文档化。
+  
+  
+  Documented是一个marker annotation，没有成员。
+  
+  
+  
+   4．Inherited
+  
+  
+  @Inherited
+meta-annotation也是一个marker
+annotation，它阐述了某个被标注的类型是被继承的。如果一个使用了@Inherited修饰的annotation类型被用于一个class，
+则这个annotation将被用于该class的子类。
+  
+  
+  注意：@Inherited 
+annotation类型是被标注过的class的子类所继承。类并不从它所实现的接口继承annotation，方法并不从它所重载的方法继承
+annotation。
+  
+  
+  值
+得思考的是，当@Inherited
+annotation类型标注的annotation的Retention是RetentionPolicy.RUNTIME，则反射API增强了这种继
+承性。如果我们使用java.lang.reflect去查询一个@Inherited
+annotation类型的annotation时，反射代码检查将展开工作：检查class和其父类，直到发现指定的annotation类型被发现，
+或者到达类继承结构的顶层。
+  
+  
+  
+   六、总结：
+  
+  
+  
+  本文几乎
+覆盖了所有的Annotation的概念和知识点，从annotation的定义、语法到工作原理、如何自定义annotation，直至meta-
+annotation。其中也具有一些配套的代码片断可参考，虽然不是很多，但是可谓言简意赅、着其重点，本人认为用好annotation的关键还在于
+使用。希望本手册能够帮助大家用好annotation，这也是本人的最大快乐。
+ 
+
+

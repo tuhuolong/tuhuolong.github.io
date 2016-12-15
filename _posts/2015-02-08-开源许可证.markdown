@@ -1,0 +1,42 @@
+---
+layout: post
+title: "开源许可证"
+date: 2015-02-08 17:43:00 
+comments: true
+categories: []
+tags: []
+description: "开源许可证"
+keywords: 
+---
+
+
+ 
+  
+   
+   
+  
+ 
+ 
+  
+  
+ 
+ 
+  
+  
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+  
+ 
+ 
+  
+  
+ 
+
+

@@ -1,0 +1,1263 @@
+---
+layout: post
+title: "v8学习笔记(四) 对象机制"
+date: 2010-09-03 15:54:00 
+comments: true
+categories: [dictionary]
+tags: [dictionary]
+description: "v8学习笔记(四) 对象机制"
+keywords: dictionary
+---
+
+
+ 
+  
+   
+    
+     v8
+    
+   
+  
+  
+   
+    对象机制
+   
+  
+  
+  
+ 
+ 
+  
+   
+    
+     
+      1.
+     
+    
+   
+   
+    
+     概述
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     v8
+    
+   
+   
+    中每一个
+   
+   
+    
+     API
+    
+   
+   
+    对象都对应一个内部实现对象
+   
+   
+    
+     (
+    
+   
+   
+    堆对象
+   
+   
+    
+     )
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+      2.
+     
+    
+   
+   
+    
+     对象创建过程
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     (1)v8::internal::Factory
+    
+   
+   
+    类
+   
+   
+    
+     :
+    
+   
+   
+    创建各种内部对象
+   
+   
+    
+     (v8::internal::)
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     (2)
+    
+   
+   
+    创建内部对象的内部
+   
+   
+    
+     Handle(v8::internal::Handle<T>;),
+    
+   
+   
+    调用
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     i::Handle<T>;::Handle(T* obj)->;HandleScope::CreateHandle(obj);
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+    
+   
+   
+    把
+   
+   
+    
+     (T*
+    
+   
+   
+    内部对象指针
+   
+   
+    
+     )
+    
+   
+   
+    放入
+   
+   
+    
+     static HandleScopeData;
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     (3)
+    
+   
+   
+    把内部句柄转化为
+   
+   
+    
+     API Handle(v8::internal::T**->;v8::T*)
+    
+   
+   
+    ，返回
+   
+   
+    
+     API Handle
+    
+   
+  
+ 
+ 
+  
+   
+    
+    
+   
+  
+ 
+ 
+  
+   
+    ---------------------------------------------------------------------------------------------------------------------------------
+   
+  
+ 
+ 
+  
+   
+    
+     V8
+    
+   
+   
+    内部类继承层次
+   
+  
+ 
+ 
+  
+   
+   
+   Object
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   Smi
+   
+   
+   (immediate small integer)
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   Failure
+   
+   
+   (immediate for marking failed operation)
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   HeapObject
+   
+   
+   (superclass for everything allocated in the heap)
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   JSObject
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   JSArray
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   JSRegExp
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   JSFunction
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   GlobalObject
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   JSGlobalObject
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   JSBuiltinsObject
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   JSGlobalProxy
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   JSValue
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   ByteArray
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   PixelArray
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   ExternalArray
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   ExternalByteArray
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   ExternalUnsignedByteArray
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   ExternalShortArray
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   ExternalUnsignedShortArray
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   ExternalIntArray
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   ExternalUnsignedIntArray
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   ExternalFloatArray
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   FixedArray
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   DescriptorArray
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   HashTable
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   Dictionary
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   StringDictionary
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   NumberDictionary
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   SymbolTable
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   CompilationCacheTable
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   CodeCacheHashTable
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   MapCache
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   Context
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   JSFunctionResultCache
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   SerializedScopeInfo
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   String
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   SeqString
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   SeqAsciiString
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   SeqTwoByteString
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   ConsString
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   ExternalString
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   ExternalAsciiString
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   ExternalTwoByteString
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   HeapNumber
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   Code
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   Map
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   Oddball
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   Proxy
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   SharedFunctionInfo
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   Struct
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   AccessorInfo
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   AccessCheckInfo
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   InterceptorInfo
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   CallHandlerInfo
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   TemplateInfo
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   FunctionTemplateInfo
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   ObjectTemplateInfo
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   Script
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   SignatureInfo
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   TypeSwitchInfo
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   DebugInfo
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   BreakPointInfo
+  
+ 
+ 
+  
+   
+   
+   |
+   
+   
+   |
+   
+   
+   |
+   
+   
+   CodeCache
+  
+ 
+
+

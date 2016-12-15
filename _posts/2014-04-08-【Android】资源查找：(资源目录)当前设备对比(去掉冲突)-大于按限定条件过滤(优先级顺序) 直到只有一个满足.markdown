@@ -1,0 +1,14 @@
+---
+layout: post
+title: "【Android】资源查找：(资源目录)当前设备对比(去掉冲突)->按限定条件过滤(优先级顺序) 直到只有一个满足"
+date: 2014-04-08 12:01:00 
+comments: true
+categories: []
+tags: []
+description: "【Android】资源查找：(资源目录)当前设备对比(去掉冲突)->按限定条件过滤(优先级顺序) 直到只有一个满足"
+keywords: 
+---
+
+
+
+

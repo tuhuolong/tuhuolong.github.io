@@ -1,0 +1,31 @@
+---
+layout: post
+title: "Eclipse启动不了"
+date: 2015-05-27 17:24:00 
+comments: true
+categories: []
+tags: []
+description: "Eclipse启动不了"
+keywords: 
+---
+
+
+ 
+  function openEclipse { open -a Eclipse --args -clean -refresh; }
+  cd to <workspace>;\.metadata\.plugins\org.eclipse.core.resources
+remove the file *.snap (or .markers in Indigo)
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

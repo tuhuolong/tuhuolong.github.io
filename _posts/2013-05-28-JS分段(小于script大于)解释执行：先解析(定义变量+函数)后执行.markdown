@@ -1,0 +1,14 @@
+---
+layout: post
+title: "JS分段(<script/>)解释执行：先解析(定义变量+函数)后执行"
+date: 2013-05-28 16:06:00 
+comments: true
+categories: []
+tags: []
+description: "JS分段(<script/>)解释执行：先解析(定义变量+函数)后执行"
+keywords: 
+---
+
+
+
+

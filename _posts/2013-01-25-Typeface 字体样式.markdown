@@ -1,0 +1,60 @@
+---
+layout: post
+title: "Typeface 字体样式"
+date: 2013-01-25 14:26:00 
+comments: true
+categories: []
+tags: []
+description: "Typeface 字体样式"
+keywords: 
+---
+
+
+ 
+  
+   Typeface类是帮助描述一个字体对象，在TextView中通过使用setTypeface方法来制定一个输出文本的字体，其直接构造调用成员create方法可以直接指定一个字体名称和样式，比如
+  
+ 
+ 
+  
+   static Typeface create(Typeface family, int style)
+  
+ 
+ 
+  
+   static Typeface create(String familyName, int style)
+  
+ 
+ 
+  
+   (使用非系统的字体文件)该类的创建方法还有从apk的资源或从一个具体的文件路径，其具体方法为
+  
+ 
+ 
+  
+   static Typeface createFromAsset(AssetManager mgr, String path)
+  
+ 
+ 
+  
+   static Typeface createFromFile(File path)
+  
+ 
+ 
+  
+   static Typeface createFromFile(String path)
+  
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   通过Typeface设置字体
+  
+ 
+
+

@@ -1,0 +1,24 @@
+---
+layout: post
+title: "JVM架构"
+date: 2011-12-22 16:22:00 
+comments: true
+categories: [jvm]
+tags: [jvm]
+description: "JVM架构"
+keywords: jvm
+---
+
+
+ 
+  
+  
+ 
+ 
+  
+   
+   
+  
+ 
+
+

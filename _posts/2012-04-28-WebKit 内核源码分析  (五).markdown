@@ -1,0 +1,1305 @@
+---
+layout: post
+title: "WebKit 内核源码分析  (五)"
+date: 2012-04-28 00:30:00 
+comments: true
+categories: [webkit]
+tags: [webkit]
+description: "WebKit 内核源码分析  (五)"
+keywords: webkit
+---
+
+
+ 
+  
+   本文分析
+  
+  
+   WebKit
+  
+  
+   中
+  
+  
+   html
+  
+  
+   的解析过程，
+  
+  
+   DOM
+  
+  
+   节点树的建立。
+  
+  
+  
+ 
+ 
+  
+   关键词：
+  
+  
+   WebKit
+  
+  
+   ，
+  
+  
+   html
+  
+  
+   解析
+  
+  
+   ,html
+ tree construction,WebCore,
+  
+ 
+ 
+  
+   DOM
+  
+  
+   节点树，
+  
+  
+   dlmu2001
+  
+ 
+ 
+  
+   1.
+   
+   
+  
+  
+   HTML
+  
+  
+   解析模型
+  
+ 
+ 
+  
+  
+ 
+ 
+ 
+ 
+  
+   
+    图
+   
+  
+  
+   1
+  
+  
+   HTML
+  
+  
+   解析模型图
+  
+ 
+ 
+  
+   上图是
+  
+  
+   HTML
+  
+  
+   解析模型图，
+  
+  
+   HTML
+  
+  
+   解析分成
+  
+  
+   Tokeniser
+  
+  
+   和
+  
+  
+   Tree
+ Construction
+  
+  
+   两个步骤，在
+  
+  
+   ”WebKit
+  
+  
+   中的
+  
+  
+   html
+  
+  
+   词法分析
+  
+  
+   ”
+  
+ 
+ 
+  
+   (
+   
+    http://blog.csdn.net/dlmu2001/archive/2010/11/09/5998130.aspx
+   
+   )
+  
+  
+   一文中，我们已经对
+  
+  
+   Tokeniser
+  
+  
+   这一步进行了分析，本文的目标是
+  
+  
+   Tree
+ Construction
+  
+  
+   这一步。
+  
+  
+  
+ 
+ 
+  
+   Tree Construction
+  
+  
+   输入是
+  
+  
+   token
+  
+  
+   流，输出是
+  
+  
+   DOM
+  
+  
+   节点树。
+  
+  
+  
+ 
+ 
+  
+   2.
+   
+   
+  
+  
+   DOM
+  
+  
+   树
+  
+ 
+ 
+  
+   HTML DOM
+  
+  
+   定义了一套标准来将
+  
+  
+   html
+  
+  
+   文档结构化，它定义了表示和修改文档所需的对象、这些对象的行为和属性以及对象之间的关系，可以把它理解为页面上数据和结构的一个树形表示。
+  
+  
+  
+ 
+ 
+  
+   Node
+  
+  
+   是
+  
+  
+   DOM
+  
+  
+   模型中的基础类，它可以分成
+  
+  
+   13
+  
+  
+   类（见
+  
+  
+   NodeType
+  
+  
+   ），在
+  
+  
+   HTML
+  
+  
+   解析中，最常见的是
+  
+  
+   Document
+  
+  
+   ，
+  
+  
+   Element
+  
+  
+   ，
+  
+  
+   Text
+  
+  
+   三类。
+  
+  
+  
+ 
+ 
+  
+   l
+   
+   
+  
+  
+   Document
+  
+  
+   是文档树的根节点，在
+  
+  
+   HTML
+  
+  
+   文档中，他派生为
+  
+  
+   HTMLDocument
+  
+  
+   。
+  
+  
+  
+ 
+ 
+  
+   l
+   
+   
+  
+  
+   在文档中，所有的标签转化为
+  
+  
+   Element
+  
+  
+   类，一般它有标签名，并根据标签名继承为特定的子类。
+  
+  
+  
+ 
+ 
+  
+   l
+   
+   
+  
+  
+   Element
+  
+  
+   之间的原始文本转化成
+  
+  
+   Text
+  
+  
+   类。
+  
+  
+  
+ 
+ 
+  
+   以一个简单的
+  
+  
+   html
+  
+  
+   页面为例：
+  
+  
+  
+ 
+ 
+  
+   <html>;
+  
+ 
+ 
+  
+   <head>;
+  
+ 
+ 
+  
+   <title>;test</title>;
+  
+ 
+ 
+  
+   </head>;
+  
+ 
+ 
+  
+   <body>;
+  
+ 
+ 
+  
+   <h1>;hl1</h1>;
+  
+ 
+ 
+  
+   <h2>;hl2</h2>;
+  
+ 
+ 
+  
+   <h3>;hl3</h3>;
+  
+ 
+ 
+  
+   </body>;
+  
+ 
+ 
+  
+   </html>;
+  
+ 
+ 
+  
+   经过解析后的节点树如下（忽略换行符）：
+  
+  
+  
+ 
+ 
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   图
+  
+  
+   2 HTML DOM
+  
+  
+   节点树示例
+  
+  
+  
+ 
+ 
+  
+   如果没有忽略换行符，则每个换行符就是一个
+  
+  
+   Value
+  
+  
+   为
+  
+  
+   ”\n”
+  
+  
+   的
+  
+  
+   Text
+  
+  
+   节点。
+  
+  
+  
+ 
+ 
+  
+   3.
+   
+   
+  
+  
+   Tree Construction
+  
+  
+   原理
+  
+ 
+ 
+  
+   将图二中的节点树以
+  
+  
+   WebKit
+  
+  
+   中的类具体化（同样忽略换行符）。
+  
+ 
+ 
+  
+ 
+ 
+  
+   图
+  
+  
+   3 Webkit HTML DOM
+  
+  
+   节点树示例
+  
+  
+  
+ 
+ 
+  
+   看到这里，你是不是觉得仿佛看到了一个呼之欲出的
+  
+  
+   Tree Construction
+  
+  
+   轮廓？是的，最简化的情况就是这样，根据输入的
+  
+  
+   token
+  
+  
+   ，创建出相应的
+  
+  
+   Element
+  
+  
+   派生类，然后添加到
+  
+  
+   DOM
+  
+  
+   树中合适的位置，这就是
+  
+  
+   Tree
+ Construction
+  
+  
+   干的事情。当然，添加到合适的位置，这个需要一系列复杂的规则，另外，
+  
+  
+   WebKit
+  
+  
+   将
+  
+  
+   Render
+  
+  
+   树的创建也放到了
+  
+  
+   Tree
+ Construction
+  
+  
+   阶段中来，再加上
+  
+  
+   CSS
+  
+  
+   ，
+  
+  
+   Javascript
+  
+  
+   ，所以，这就是你看到的复杂的代码。
+  
+  
+  
+ 
+ 
+  
+   放出两个函数原型，热热身，培养培养感情。
+  
+ 
+ 
+ 
+ 
+  
+   
+    
+     [cpp]
+    
+    
+     view
+ plain
+    
+    
+     copy
+    
+    
+    
+   
+  
+  
+   
+    
+     
+      PassRefPtr<Element>; HTMLConstructionSite::createHTMLElement(AtomicHTMLToken& token);
+     
+    
+   
+   
+    
+    
+   
+   
+    
+     
+      void
+     
+     
+      HTMLConstructionSite::insertHTMLElement(AtomicHTMLToken& token);<span style=
+     
+     
+      "color:#595959;FONT-SIZE: 12pt"
+     
+     
+      >; </span>;
+     
+    
+   
+  
+ 
+ 
+  
+   Tree Construction
+  
+  
+   流程由一个状态“
+  
+  
+   Insertion Mode”
+  
+  
+   进行控制，它影响
+  
+  
+   token
+  
+  
+   的处理以及是否支持
+  
+  
+   CDATA
+  
+  
+   部分，
+  
+  
+   HTML5
+  
+  
+   中给出了详细的规则（
+  
+  
+   
+    http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#the-insertion-mode
+   
+  
+  
+   ）。它也控制了在特定状态下能够处理的
+  
+  
+   token
+  
+  
+   ，比如在
+  
+  
+   head
+  
+  
+   里面，再出现
+  
+  
+   head
+  
+  
+   标签，显然是不应该处理的。
+  
+  
+  
+ 
+ 
+  
+   4.
+   
+   
+  
+  
+   开放元素堆栈
+  
+ 
+ 
+  
+   为了维护即将解析的标签同已解析的标签之间的关系（此时即将解析的标签还没有加入到
+  
+  
+   DOM
+  
+  
+   树中），引入了开放元素堆栈
+  
+  
+   m_openElements,
+  
+  
+   初始状态下，这个堆栈是空的，它是向下增长的，所以最上面的节点是最早加入到堆栈中的，在
+  
+  
+   html
+  
+  
+   文档中，最上面的节点就是
+  
+  
+   html
+  
+  
+   元素，最底部的节点就是最新加入到堆栈中的。
+  
+  
+   Tree
+ Builder
+  
+  
+   的时候，每碰到一个
+  
+  
+   StartTag
+  
+  
+   的
+  
+  
+   token
+  
+  
+   ，就会往
+  
+  
+   m_opnElements
+  
+  
+   中压栈，碰到
+  
+  
+   EndTag
+  
+  
+   的
+  
+  
+   token
+  
+  
+   ，则出栈。像
+  
+  
+   Character
+  
+  
+   这样的
+  
+  
+   token
+  
+  
+   ，则不需要进行压栈出栈的动作，只有可以包含子节点的
+  
+  
+   tag
+  
+  
+   ，才做压栈出栈的动作。
+  
+  
+   Html5
+  
+  
+   的文档中对开放元素堆栈也有说明，
+  
+  
+   
+    http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#the-stack-of-open-elements
+   
+  
+  
+   。
+  
+  
+  
+ 
+ 
+  
+   对于正在解析的
+  
+  
+   token
+  
+  
+   ，除了根节点
+  
+  
+   html
+  
+  
+   ，它必然是堆栈底部元素（
+  
+  
+   m_openElements.top()
+  
+  
+   ）的子节点，所以在形成
+  
+  
+   DOM
+  
+  
+   树的时候，就可以通过
+  
+  
+   ContainerNode::parserAddChild
+  
+  
+   这样的接口加入到
+  
+  
+   DOM
+  
+  
+   节点树中。
+  
+  
+  
+ 
+ 
+  
+   除了正常的堆栈和压栈，对于
+  
+  
+   html,head,body
+  
+  
+   元素，栈结构
+  
+  
+   (HTMLElementStack)
+  
+  
+   中有专门的成员
+  
+  
+   m_htmlElement,m_headElement,m_bodyElement
+  
+  
+   记录，主要是用于检错纠错处理。
+  
+  
+  
+ 
+ 
+  
+   在本文的
+  
+  
+   html
+  
+  
+   范例中，当解析到
+  
+  
+   <h2>;hl2</h2>;
+  
+  
+   的
+  
+  
+   hl2
+  
+  
+   这个
+  
+  
+   character
+  
+  
+   的
+  
+  
+   token
+  
+  
+   的时候，它的开放元素堆栈如下，
+  
+  
+   HTMLHeadingElement
+  
+  
+   是堆栈的
+  
+  
+   top
+  
+  
+   ，所以它是
+  
+  
+   hl2
+  
+  
+   这个
+  
+  
+   Text
+  
+  
+   节点的
+  
+  
+   parent
+  
+  
+   。
+  
+ 
+ 
+  
+ 
+ 
+  
+   图
+  
+  
+   4
+  
+  
+   开放元素堆栈示例
+  
+  
+  
+ 
+ 
+  
+   此时的
+  
+  
+   DOM
+  
+  
+   节点树如下：
+  
+ 
+ 
+  
+ 
+ 
+  
+   图
+  
+  
+   5 Webkit DOM
+  
+  
+   节点数示例
+  
+  
+  
+ 
+ 
+  
+   5.
+   
+   
+  
+  
+   元素的创建
+  
+ 
+ 
+  
+   HTMLElementFactory
+  
+  
+   类提供了元素的创建方法
+  
+  
+   createHTMLElement
+  
+  
+   。传入为对应的标签名，所属的
+  
+  
+   document
+  
+  
+   ，所属的
+  
+  
+   form
+  
+  
+   （如果属于
+  
+  
+   form
+  
+  
+   ），在
+  
+  
+   parser
+  
+  
+   的时候，最后一个参数为
+  
+  
+   true
+  
+  
+   。
+  
+ 
+ 
+ 
+ 
+  
+   
+    
+     [cpp]
+    
+    
+     view
+ plain
+    
+    
+     copy
+    
+    
+    
+   
+  
+  
+   
+    
+     
+      PassRefPtr<HTMLElement>; HTMLElementFactory::createHTMLElement(
+     
+     
+      const
+     
+     
+      QualifiedName& qName, Document* document, HTMLFormElement* formElement,
+     
+     
+      bool
+     
+     
+      createdByParser);
+     
+    
+   
+  
+ 
+ 
+  
+   在
+  
+  
+   HTMLElementFactory
+  
+  
+   中，通过一个
+  
+  
+   Hash Map
+  
+  
+   将
+  
+  
+   tag
+ name
+  
+  
+   和对应的元素构造函数对应起来
+  
+  
+   (gFunctionMap)
+  
+  
+   。
+  
+  
+   tag
+  
+  
+   一般对应一个派生于
+  
+  
+   HTMLElement
+  
+  
+   的类。如下是
+  
+  
+   HTMLHeadingElement
+  
+  
+   的类层次结构图。
+  
+ 
+ 
+  
+ 
+ 
+  
+   图
+  
+  
+   6 HTMLHeadingElement
+  
+  
+   类层次图
+  
+  
+  
+ 
+ 
+  
+   6.
+   
+   
+  
+  
+   其它
+  
+ 
+ 
+  
+   HTMLConstructionSite::attach
+  
+  
+   中的
+  
+  
+   attach
+  
+  
+   一词，地瓜理解主要是
+  
+  
+   attach
+  
+  
+   到
+  
+  
+   DOM
+  
+  
+   节点数上，当然，它同时调用了
+  
+  
+   Element::attach
+  
+  
+   ，
+  
+  
+   Element
+  
+  
+   类的
+  
+  
+   attach
+  
+  
+   主要是
+  
+  
+   attach
+  
+  
+   到
+  
+  
+   Render
+  
+  
+   树上，它会创建对应该
+  
+  
+   Element
+  
+  
+   的
+  
+  
+   RendrObject
+  
+  
+   。
+  
+  
+  
+ 
+ 
+  
+   除了
+  
+  
+   m_openElements
+  
+  
+   ，
+  
+  
+   HTMLConstructionSite
+  
+  
+   同时维护了
+  
+  
+   Format
+  
+  
+   元素列表
+  
+  
+   m_activeFormattingElements,Formating
+  
+  
+   元素就是那些格式化标签，包括
+  
+  
+   a,b,big,code,em,font,I,fot,I,nobr,s,small,strike,strong,tt,u
+  
+  
+   。为了处理这些
+  
+  
+   Formatting
+  
+  
+   元素的嵌套关系（此时它们可能不是父子关系，而是平级，不加入到
+  
+  
+   m_openElements
+  
+  
+   ），
+  
+  
+   HTML5
+  
+  
+   引入了这个列表（
+  
+  
+   
+    http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#list-of-active-formatting-elements
+   
+  
+  
+   ）。
+  
+  
+  
+ 
+ 
+  
+   使用
+  
+  
+   gdb
+  
+  
+   调试的童子，可以运行
+  
+  
+   Tools/gdb/webkit.py
+  
+  
+   脚本，在
+  
+  
+   print
+  
+  
+   结构体的时候得到易于理解的表示，还可以打印出节点树，具体参考
+  
+  
+   
+    http://trac.webkit.org/wiki/GDB
+   
+  
+  
+   。
+  
+ 
+
+

@@ -1,0 +1,33 @@
+---
+layout: post
+title: "apk的v2 签名"
+date: 2016-11-15 17:55:00 
+comments: true
+categories: []
+tags: []
+description: "apk的v2 签名"
+keywords: 
+---
+
+
+ 
+  
+   
+    APK Signature Scheme v2
+   
+  
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

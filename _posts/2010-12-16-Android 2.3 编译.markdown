@@ -1,0 +1,189 @@
+---
+layout: post
+title: "Android 2.3 编译"
+date: 2010-12-16 11:57:00 
+comments: true
+categories: [android]
+tags: [android]
+description: "Android 2.3 编译"
+keywords: android
+---
+
+
+ 
+  How to compile Android 2.3 on Ubuntu 10.04 32bit
+ 
+ 
+  1:issue 
+"You are attempting to build on a 32-bit system"
+  
+  
+  How to fix:
+  
+  $
+ vim build/core/main.mk
+  
+  change
+  
+  ifneq (64,$(findstring 
+64,$(build_arch)))
+  
+  to
+  
+  ifneq (i686,$(findstring 
+i686,$(build_arch)))
+  
+  $(warning 
+************************************************************)
+  
+  $(warning
+ You are attempting to build on a 32-bit system.)
+  
+  $(warning Only 
+64-bit build environments are supported beyond froyo/2.2.)
+  
+  $(warning 
+************************************************************)
+  
+  $(error
+ stop)
+  
+  endif
+  
+  
+  
+  external/clearsilver/cgi/Android.mk,
+  
+  external/clearsilver/java-jni/Android.mk,
+  
+  external/clearsilver/util/Android.mk,
+  
+  external/clearsilver/cs/Android.mk
+  
+  
+  change
+  
+  LOCAL_CFLAGS
+ += -m64
+  
+  LOCAL_LDFLAGS += -m64
+  
+  to
+  
+  LOCAL_CFLAGS += -m32
+  
+  LOCAL_LDFLAGS
+ += -m32
+  
+  
+  
+  2:issue "host C: libclearsilver-jni <= 
+external/clearsilver/java-jni/j_neo_util.c
+  
+  In file included from 
+/usr/include/features.h:378,
+  
+  from 
+/usr/include/string.h:26,
+  
+  from 
+external/clearsilver/java-jni/j_neo_util.c:1:
+  
+  /usr/include/gnu/stubs.h:9:27:
+ error: gnu/stubs-64.h: 没有那个文件或目录
+  
+  make: *** 
+[out/host/linux-x86/obj/SHARED_LIBRARIES/libclearsilver-
+jni_intermediates/j_neo_util.o]错误"
+  
+  
+  How to fix:
+  
+  sudo apt-get 
+install lib64z1-dev libc6-dev-amd64 g++-multilib lib64stdc++6
+  
+  
+  
+  3:issue:
+  
+  host
+ SharedLib: libneo_util (out/host/linux-x86/obj/lib/libneo_util.so)
+  
+  /usr/bin/ld:
+ skipping incompatible /usr/lib/gcc/i486-linux-gnu/4.3.4/libstdc++.so 
+when searching for -lstdc++
+  
+  /usr/bin/ld: skipping incompatible 
+/usr/lib/gcc/i486-linux-gnu/4.3.4/libstdc++.a when searching for 
+-lstdc++
+  
+  /usr/bin/ld: skipping incompatible 
+/usr/lib/gcc/i486-linux-gnu/4.3.4/libstdc++.so when searching for 
+-lstdc++
+  
+  /usr/bin/ld: skipping incompatible 
+/usr/lib/gcc/i486-linux-gnu/4.3.4/libstdc++.a when searching for 
+-lstdc++
+  
+  /usr/bin/ld: cannot find -lstdc++
+  
+  collect2: ld returned 1
+ exit status
+  
+  make: *** [out/host/linux-x86/obj/lib/libneo_util.so] 
+Error 1
+  
+  
+  How to fix:
+  
+  
+  
+  
+  4
+  
+  frameworks/base/core/java/android/app/ListActivity.java:319:
+ inconvertible types
+  
+  found : android.widget.AdapterView<capture of
+ ?>;
+  
+  required: android.widget.ListView
+  
+  onListItemClick((ListView)parent,
+ v, position, id);
+  
+  ^
+  
+  Note: Some input files use or override a 
+deprecated API.
+  
+  Note: Recompile with -Xlint:deprecation for details.
+  
+  Note:
+ Some input files use unchecked or unsafe operations.
+  
+  Note: Recompile
+ with -Xlint:unchecked for details.
+  
+  
+  How to fix:
+  
+  其实JDK的版本低了，用了
+1.5.0_06的版本，用1.6就可以了
+  
+  
+  
+  
+   Reference:
+  
+  
+  
+   http://iopenfree.appspot.com/?p=4001
+  
+  
+  
+   http://0123.blog.163.com/blog/static/478831201061214128901/
+  
+ 
+
+

@@ -1,0 +1,14 @@
+---
+layout: post
+title: "union用来节省空间,有些数据项不会同时出现"
+date: 2011-10-26 15:41:00 
+comments: true
+categories: []
+tags: []
+description: "union用来节省空间,有些数据项不会同时出现"
+keywords: 
+---
+
+
+
+

@@ -1,0 +1,36 @@
+---
+layout: post
+title: "Https的握手协议"
+date: 2015-12-30 17:20:00 
+comments: true
+categories: []
+tags: []
+description: "Https的握手协议"
+keywords: 
+---
+
+
+ 
+  
+   
+  
+  
+   
+    https://blog.cloudflare.com/keyless-ssl-the-nitty-gritty-technical-details/
+   
+  
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

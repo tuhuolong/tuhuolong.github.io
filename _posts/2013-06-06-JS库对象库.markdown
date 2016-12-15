@@ -1,0 +1,14 @@
+---
+layout: post
+title: "JS库:对象库"
+date: 2013-06-06 14:26:00 
+comments: true
+categories: []
+tags: []
+description: "JS库:对象库"
+keywords: 
+---
+
+
+
+

@@ -1,0 +1,34 @@
+---
+layout: post
+title: "SE Key"
+date: 2016-11-08 13:30:00 
+comments: true
+categories: []
+tags: []
+description: "SE Key"
+keywords: 
+---
+
+
+ 
+  
+   
+  
+  
+   Secure Element Key(操作SE的权限)
+  
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

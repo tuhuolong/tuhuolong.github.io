@@ -1,0 +1,903 @@
+---
+layout: post
+title: "v8学习笔记(八) 【JS与C++互调】"
+date: 2010-09-03 16:06:00 
+comments: true
+categories: [c++]
+tags: [c++]
+description: "v8学习笔记(八) 【JS与C++互调】"
+keywords: c++
+---
+
+
+ 
+  
+   
+    
+     v8
+    
+   
+   
+    中
+   
+   
+    
+     JS与
+    
+   
+   
+    
+     C++
+    
+   
+   
+    互调
+   
+  
+ 
+ 
+  
+   
+    
+     **************************v8
+    
+   
+   
+    中
+   
+   
+    
+     JS
+    
+   
+   
+    调
+   
+   
+    
+     C++:
+    
+   
+   
+    注册回调函数
+   
+   
+    
+     *****************************
+    
+   
+  
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   
+    
+     JS
+    
+   
+   
+    调
+   
+   
+    
+     C++
+    
+   
+   
+    数据
+   
+   
+    
+     :
+    
+   
+   
+    访问器
+   
+   
+    
+     (Accessor)
+     
+     
+     (
+    
+   
+   
+    直接访问
+   
+   
+    
+     )
+    
+   
+  
+ 
+ 
+  
+   
+    
+     (1)
+    
+   
+   
+    定义
+   
+   
+    
+     C++
+    
+   
+   
+    回调函数
+   
+   
+    
+     Getter/Setter
+    
+   
+  
+ 
+ 
+  
+   
+    
+     (2)Context
+    
+   
+   
+    全局对象模板
+   
+   
+    
+     (ObjectTemplate)
+    
+   
+   
+    注册
+   
+   
+    
+     Getter/Setter
+    
+   
+  
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   
+    
+     JS
+    
+   
+   
+    调
+   
+   
+    
+     C++
+    
+   
+   
+    函数
+   
+   
+    
+     :(Context)
+    
+   
+   
+    全局对象模板
+   
+   
+    
+     ObjectTemplate
+    
+   
+   
+    注册回调函数
+   
+   
+    
+     (
+    
+   
+   
+    通过
+   
+   
+    
+     v8::Arguments
+    
+   
+   
+    传递参数
+   
+   
+    
+     )
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     Template::Set(Handle<String>; name, Handle<Data>; value,PropertyAttribute attributes = None);
+    
+   
+  
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   
+    
+     JS
+    
+   
+   
+    调
+   
+   
+    
+     C++
+    
+   
+   
+    对象
+   
+   
+    
+     :(
+    
+   
+   
+    通过
+   
+   
+    
+     CPPObj.XXX
+    
+   
+   
+    访问
+   
+   
+    
+     )
+    
+   
+  
+ 
+ 
+  
+   
+    
+     1.C++
+    
+   
+   
+    对象映射成
+   
+   
+    
+     (v8_API)JS
+    
+   
+   
+    对象
+   
+   
+    
+     ,
+    
+   
+   
+    加入
+   
+   
+    
+     JS
+    
+   
+   
+    运行时环境
+   
+   
+    
+     (Context):
+     
+     
+     
+     
+     C++
+    
+   
+   
+    类映射成
+   
+   
+    
+     ObjectTemplate
+    
+   
+   
+    对象
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     (1)
+    
+   
+   
+    创建
+   
+   
+    
+     JS
+    
+   
+   
+    对象模板
+   
+   
+    
+     ObjectTemplate:
+     
+     
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     Handle<ObjectTemplate>; JSObjTempl = ObjectTemplate::New();
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     (2)
+    
+   
+   
+    设置对象模板内部域
+   
+   
+    
+     :
+     
+     
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     JSObjTempl->;SetInternalFieldCount(1);
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     (3)
+    
+   
+   
+    创建
+   
+   
+    
+     JS
+    
+   
+   
+    对象
+   
+   
+    
+     :
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     Local<Object>; JSObj=JSObjTempl->;NewInstance();
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     (3)C++
+    
+   
+   
+    对象包装成
+   
+   
+    
+     (External)
+    
+   
+   
+    外部对象
+   
+   
+    
+     ,
+    
+   
+   
+    放入
+   
+   
+    
+     JS
+    
+   
+   
+    对象内部域
+   
+   
+    
+     :
+     
+     
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     ClassA* p=new ClassA(3,7);
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     Local<External>; Ext=External::New(p);
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     JSObj->;SetInternalField(0,Ext);
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     (4)JS
+    
+   
+   
+    对象放入运行时环境
+   
+   
+    
+     (
+    
+   
+   
+    全局对象
+   
+   
+    
+     )
+     
+     
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     context->;Global()->;Set(String::New("ClassA"),JSObj);
+    
+   
+  
+ 
+ 
+  
+   
+    
+    
+   
+  
+ 
+ 
+  
+   
+    
+     2.
+    
+   
+   
+    调
+   
+   
+    
+     C++
+    
+   
+   
+    对象的成员数据
+   
+   
+    
+     :JS
+    
+   
+   
+    对象模板注册
+   
+   
+    
+     Getter/Setter
+    
+   
+   
+    回调函数
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     JSObjTempl->;SetAccessor(String::New("x"),GetCPPObj_X,SetCPPObj_X);
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     JSObjTempl->;SetAccessor(String::New("y"),GetCPPObj_Y,SetCPPObj_Y);
+    
+   
+  
+ 
+ 
+  
+   
+    
+     3.
+    
+   
+   
+    调
+   
+   
+    
+     C++
+    
+   
+   
+    对象的成员函数
+   
+   
+    
+     :JS
+    
+   
+   
+    对象模板注册回调函数
+   
+   
+    
+     ,
+    
+   
+   
+    通过回调函数调用成员函数
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     JSObjTempl->;Set(String::New("method_a"), FunctionTemplate::New(Callback_A));
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     JSObjTempl->;Set(String::New("method_b"), FunctionTemplate::New(Callback_B));
+    
+   
+  
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   
+    
+    
+   
+  
+ 
+ 
+  
+   
+    回调函数
+   
+   
+    
+     :(1)(
+    
+   
+   
+    当前调用
+   
+   
+    
+     )JS
+    
+   
+   
+    对象
+   
+   
+    
+     :
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     Local<Object>; self = AccessorInfo.Holder()/Arguments.Holder();
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     
+     
+     (2)(
+    
+   
+   
+    包装后
+   
+   
+    
+     )
+    
+   
+   
+    外部对象
+   
+   
+    
+     :
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     Local<External>; wrap = Local<External>;::Cast(self->;GetInternalField(0));
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     
+     
+     (3)C++
+    
+   
+   
+    对象
+   
+   
+    
+     
+     
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     CPPObj* p = static_cast<CPPObj*>;(wrap->;Value())
+    
+   
+  
+ 
+ 
+  
+   
+    
+     **********************************C++
+    
+   
+   
+    调
+   
+   
+    
+     JS**************************************
+    
+   
+  
+ 
+ 
+  
+   
+    
+    
+   
+  
+ 
+ 
+  
+   C++
+  
+  
+   调
+  
+  
+   JS
+  
+  
+   函数
+  
+  
+   :
+  
+  
+   运行时环境查找
+  
+  
+   JS
+  
+  
+   函数
+  
+  
+   ,
+  
+  
+   并调用
+  
+ 
+
+

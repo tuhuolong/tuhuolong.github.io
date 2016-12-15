@@ -1,0 +1,33 @@
+---
+layout: post
+title: "View.computeScroll 回调   (绘制时)"
+date: 2016-06-22 19:50:00 
+comments: true
+categories: []
+tags: []
+description: "View.computeScroll 回调   (绘制时)"
+keywords: 
+---
+
+
+ 
+  
+   
+    draw 触发
+   
+  
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

@@ -1,0 +1,23 @@
+---
+layout: post
+title: "Dalvik启动"
+date: 2010-12-10 09:39:00 
+comments: true
+categories: []
+tags: []
+description: "Dalvik启动"
+keywords: 
+---
+
+
+ 
+  Dalvik启动过程
+ 
+ 
+  (1)创建运行时环境(创建一个DalvikVM实例):初始化,主线程...
+ 
+ 
+  (2)启动类调用Main方法.
+ 
+
+

@@ -1,0 +1,30 @@
+---
+layout: post
+title: "gtest"
+date: 2012-05-08 10:59:00 
+comments: true
+categories: []
+tags: []
+description: "gtest"
+keywords: 
+---
+
+
+ 
+  编译
+ 
+ 
+  
+  
+  ./configure
+ 
+ 
+  
+  
+  make
+ 
+ 
+  得到libgtest.a  libgtest.so
+ 
+
+

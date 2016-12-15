@@ -1,0 +1,31 @@
+---
+layout: post
+title: "【Android】进程"
+date: 2014-08-09 18:40:00 
+comments: true
+categories: []
+tags: []
+description: "【Android】进程"
+keywords: 
+---
+
+
+ 
+  
+   
+    init ->; app_process->;ZygoteInit
+   
+  
+ 
+ 
+  
+   
+    adb ->; pm ->; app_process->;RuntimeInit->;
+    
+     com.android.commands.pm.Pm
+    
+   
+  
+ 
+
+

@@ -1,0 +1,168 @@
+---
+layout: post
+title: "模糊挖洞"
+date: 2016-03-07 14:30:00 
+comments: true
+categories: []
+tags: []
+description: "模糊挖洞"
+keywords: 
+---
+
+
+ 
+  public class MainActivity extends Activity {
+    Context mContext;
+
+    int count = 0;
+
+    ImageView image;
+    TextView blurview;
+    View text;
+
+    TextView clear;
+    int x = 500;
+    int y = 300;
+    int length = 280;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        mContext = this;
+
+        setContentView(R.layout.activity_main);
+
+        findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                count++;
+                if (count % 2 == 1) {
+                    findViewById(R.id.button).setBackgroundColor(Color.parseColor("#9F3730"));
+                } else {
+                    findViewById(R.id.button).setBackgroundColor(Color.parseColor("#303F9F"));
+                }
+            }
+        });
+
+        findViewById(R.id.button2).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                findViewById(R.id.button2).setVisibility(View.GONE);
+            }
+        });
+
+        findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // findViewById(R.id.button2).setVisibility(View.VISIBLE);
+                Bitmap bitmap = getCircularBitmap(
+                        ((BitmapDrawable) image.getDrawable()).getBitmap());
+
+                clear.setBackground(new BitmapDrawable(
+                        getResources(), bitmap));
+            }
+        });
+
+        image = (ImageView) findViewById(R.id.picture);
+        blurview = (TextView) findViewById(R.id.blur);
+        clear = (TextView) findViewById(R.id.clear);
+        text = findViewById(R.id.text);
+
+        applyBlur();
+
+    }
+
+    private void applyBlur() {
+        image.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+
+            @Override
+            public boolean onPreDraw() {
+
+                image.getViewTreeObserver().removeOnPreDrawListener(this);
+                image.buildDrawingCache();
+                Bitmap bmp = image.getDrawingCache();
+                blur(bmp, text);
+
+                return true;
+            }
+        });
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    private void blur(Bitmap bkg, View textview) {
+        float radius = 25;
+
+        Bitmap overlay = Bitmap.createBitmap((int) (image.getMeasuredWidth()),
+                (int) (image.getMeasuredHeight()), Bitmap.Config.ARGB_8888);
+
+        Canvas canvas = new Canvas(overlay);
+
+        canvas.drawBitmap(bkg, 0, 0, null);
+
+        RenderScript rs = RenderScript.create(mContext);
+
+        Allocation overlayAlloc = Allocation.createFromBitmap(
+                rs, overlay);
+
+        ScriptIntrinsicBlur blur = ScriptIntrinsicBlur.create(
+                rs, overlayAlloc.getElement());
+
+        blur.setInput(overlayAlloc);
+
+        blur.setRadius(radius);
+
+        blur.forEach(overlayAlloc);
+
+        overlayAlloc.copyTo(overlay);
+
+        blurview.setBackground(new BitmapDrawable(
+                getResources(), overlay));
+
+        rs.destroy();
+    }
+
+    public Bitmap getCircularBitmap(Bitmap bitmap) {
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(length, length);
+        lp.leftMargin = x;
+        lp.topMargin = y;
+        clear.setLayoutParams(lp);
+
+        Bitmap output;
+
+        output = Bitmap.createBitmap(length, length, Bitmap.Config.ARGB_8888);
+
+        Canvas canvas = new Canvas(output);
+
+        final int color = 0xff424242;
+        final Paint paint = new Paint();
+        final Rect rect1 = new Rect(0 + x, 0 + y, 280 + x, 280 + y);
+        final Rect rect2 = new Rect(0, 0, 280, 280);
+
+        float r = 140;
+
+        paint.setAntiAlias(true);
+        canvas.drawARGB(0, 0, 0, 0);
+        paint.setColor(color);
+        canvas.drawCircle(r, r, r, paint);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect1, rect2, paint);
+
+        return output;
+    }
+}
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

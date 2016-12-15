@@ -1,0 +1,507 @@
+---
+layout: post
+title: "Launcher(待完善...)"
+date: 2013-05-22 14:47:00 
+comments: true
+categories: []
+tags: []
+description: "Launcher(待完善...)"
+keywords: 
+---
+
+
+ 
+  
+   
+    
+     构成
+    
+   
+  
+ 
+ 
+  
+   
+    （1）Launcher（主Activity）
+   
+  
+ 
+ 
+  
+   
+    （2）WidgetHost
+   
+  
+ 
+ 
+  
+   
+    （3）InstallShortcutReceiver（创建快捷方式Receiver）
+   
+  
+ 
+ 
+  
+   
+    （4）InstallWidgetReceiver（创建Widget Receiver）
+   
+  
+ 
+ 
+  
+   
+    （5）UninstallShortcutReceiver（删除快捷方式Receiver）
+   
+  
+ 
+ 
+  
+   
+    （6）UserInitializeReceiver
+   
+  
+ 
+ 
+  
+   
+    （7）Provider （数据库）
+   
+  
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   
+    
+     数据项
+    
+   
+  
+ 
+ 
+  
+   
+    （1）ShortcutInfo
+   
+  
+ 
+ 
+  
+   
+    （2）WidgetInfo
+   
+  
+ 
+ 
+  
+   
+    （3）FolderInfo
+   
+  
+ 
+ 
+  
+   
+    （4）ApplicationInfo
+   
+  
+ 
+ 
+  
+   
+    （5）WidgetProviderInfo
+   
+  
+ 
+ 
+  
+   
+    
+    
+   
+  
+ 
+ 
+  
+   
+    
+     1.启动主页面
+    
+    （后台同时启动一个工作线程）
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+    
+   
+  
+ 
+ 
+  
+   
+    
+     2.异步加载数据
+    
+   
+  
+ 
+ 
+  
+   
+    Shortcut+Widget+Folder（uri
+    
+     content://com.android.launcher2.settings/favorites?notify=true）
+    
+   
+  
+ 
+ 
+  
+   
+    Application（mainIntent(ACTION_MAIN+CATEGORY_LAUNCHER)查询PackageManager）
+   
+  
+ 
+ 
+  
+   
+    WidgetProvider（AppWidgetManager.getInstalledProviders）+
+    
+     ACTION_CREATE_SHORTCUT
+    
+    的Activity
+    
+     ->;(目前在Launcher.onCreate时同步加载)
+    
+   
+  
+ 
+ 
+  
+   
+    
+     3.刷新
+    
+   
+  
+ 
+ 
+  
+   
+    （1）取出数据更新所有屏+Hotseat
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+    
+   
+  
+ 
+ 
+  
+   
+    Shortcut（Desktop+Hotseat）：BubbleTextView
+   
+  
+ 
+ 
+  
+   
+    Folder：FolderIcon
+   
+  
+ 
+ 
+  
+   
+    （2）应用+Widget提供者(+某些Activity)
+   
+  
+ 
+ 
+  
+   
+    
+     
+      
+      
+     
+    
+   
+  
+ 
+ 
+  
+   
+    Application：PagedViewIcon
+    
+    
+   
+  
+ 
+ 
+  
+   
+    WidgetProvider：PagedViewWidget
+   
+  
+ 
+ 
+  
+   
+    
+    
+   
+  
+ 
+ 
+  
+   
+    
+     4.创建Widget
+    
+   
+  
+ 
+ 
+  
+   
+    WidgetProvider拖动到桌面
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+    
+   
+  
+ 
+ 
+  
+   
+    （1）分配WidgetId
+   
+  
+ 
+ 
+  
+   
+    （2）绑定Id （只有/system/app/的app有权限直接绑定，其他只能通过ACTION_APPWIDGET_PICK绑定）
+   
+  
+ 
+ 
+  
+   
+    （3）绑定成功->;更新数据库（创建
+    
+     WidgetInfo
+    
+    ），创建HostView（请求RemoteViews，创建HostView）并添加到屏幕
+   
+  
+ 
+ 
+  
+   
+    
+     ACTION_APPWIDGET_CONFIGURE
+    
+   
+  
+ 
+ 
+  
+   
+    绑定失败->;发送Intent（AppWidgetManager.ACTION_APPWIDGET_BIND）请求第三方绑定 ->;绑定成功->;
+   
+  
+ 
+ 
+  
+   
+    
+    
+   
+  
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   
+    （1）
+    
+     分配id
+    
+    （用HostId请求分配WidgetId：WidgetHost.allocateAppWidgetId：由WidgetService分配一个WidgetID）
+   
+  
+ 
+ 
+  
+   
+    WidgetService端：Host列表+WidgetId列表
+   
+  
+ 
+ 
+  
+   
+    （2）
+    
+     绑定id
+    
+    （WidegetService端将WidgetId绑定到Provider）
+   
+  
+ 
+ 
+  
+   WidgetManager.bindAppWidgetId
+   
+    （只有/system/app/的app有权限调用，其他只能通过ACTION_APPWIDGET_PICK绑定）
+   
+  
+ 
+ 
+  
+   将WidgetID放入相应WidgetProvider的ID列表
+  
+ 
+ 
+  
+   
+    发送
+   
+   Enable(第一次)+Update
+   
+    广播
+   
+   （Service发送广播请求RemoteViews）
+  
+ 
+ 
+  
+   
+    WidgetService.sendEnableIntent 发送Enable广播
+   
+  
+ 
+ 
+  
+   
+    WidgetService.sendUpdateIntent 发送Update广播(WidgetIDs)
+   
+  
+ 
+ 
+  
+   
+    （3）
+    
+     Provider发送RemoteViews
+    
+    （接受广播，创建RemoteViews，再发给Service）
+   
+  
+ 
+ 
+  
+   
+    WidgetProvider接受广播，回调onEnable，onUpdate
+   
+  
+ 
+ 
+  
+   
+    创建RemoteViews（每一个WidgetID创建一个）
+   
+  
+ 
+ 
+  
+   
+    WidgetManager.updateAppWidget 将RemoteViews发给WidgetService
+   
+  
+ 
+ 
+  
+   
+    （4）
+    
+     Service
+    
+    通知Host
+   
+  
+ 
+ 
+  
+   
+    WidgetService通过IBinder回调WidgetHost的Callbacks（updateAppWidget，providerChanged，viewDataChanged）
+   
+  
+ 
+ 
+  
+   
+    （5）
+    
+     添加到桌面
+    
+    （Host创建View，刷新）
+   
+  
+ 
+ 
+  
+   
+    创建WidgetInfo数据项，更新数据库
+   
+  
+ 
+ 
+  
+   
+    Host创建HostView（根据WidgetId获取RemoteViews，创建WidgetView，添加），添加桌面
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+    
+   
+  
+ 
+
+

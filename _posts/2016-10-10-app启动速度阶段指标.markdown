@@ -1,0 +1,36 @@
+---
+layout: post
+title: "app启动速度阶段指标"
+date: 2016-10-10 11:44:00 
+comments: true
+categories: []
+tags: []
+description: "app启动速度阶段指标"
+keywords: 
+---
+
+
+ 
+  makeApplication(loadDex) 20ms
+    loadDex 20ms
+    rewriteRValue 5ms
+Application.onCreate 60ms
+Activity.onCreate 40ms
+ViewRootImpl.doTraversal 30ms
+    measureHierarchy 20ms
+    performDraw 10ms
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

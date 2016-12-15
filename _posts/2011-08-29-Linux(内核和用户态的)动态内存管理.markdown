@@ -1,0 +1,26 @@
+---
+layout: post
+title: "Linux(内核和用户态的)动态内存管理"
+date: 2011-08-29 17:12:00 
+comments: true
+categories: [linux]
+tags: [linux]
+description: "Linux(内核和用户态的)动态内存管理"
+keywords: linux
+---
+
+
+ 
+ 
+ 
+  
+   
+   
+  
+  
+   http://www.ibm.com/developerworks/cn/linux/l-cn-slub/
+  
+  
+  
+ 
+

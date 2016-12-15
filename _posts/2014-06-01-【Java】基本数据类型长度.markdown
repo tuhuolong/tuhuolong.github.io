@@ -1,0 +1,159 @@
+---
+layout: post
+title: "【Java】基本数据类型长度"
+date: 2014-06-01 16:35:00 
+comments: true
+categories: []
+tags: []
+description: "【Java】基本数据类型长度"
+keywords: 
+---
+
+
+ 
+  
+   private
+  
+  
+   int
+  
+  primitiveSize(Class<?>; type) {
+ 
+ 
+  
+   if
+  
+  (type ==
+  
+   byte
+  
+  .
+  
+   class
+  
+  || type ==
+  
+   boolean
+  
+  .
+  
+   class
+  
+  ) {
+ 
+ 
+  
+   return
+  
+  1;
+ 
+ 
+  }
+ 
+ 
+  
+   if
+  
+  (type ==
+  
+   short
+  
+  .
+  
+   class
+  
+  || type ==
+  
+   char
+  
+  .
+  
+   class
+  
+  ) {
+ 
+ 
+  
+   return
+  
+  2;
+ 
+ 
+  }
+ 
+ 
+  
+   if
+  
+  (type ==
+  
+   int
+  
+  .
+  
+   class
+  
+  || type ==
+  
+   float
+  
+  .
+  
+   class
+  
+  ) {
+ 
+ 
+  
+   return
+  
+  4;
+ 
+ 
+  }
+ 
+ 
+  
+   if
+  
+  (type ==
+  
+   long
+  
+  .
+  
+   class
+  
+  || type ==
+  
+   double
+  
+  .
+  
+   class
+  
+  ) {
+ 
+ 
+  
+   return
+  
+  8;
+ 
+ 
+  }
+ 
+ 
+  
+   throw
+  
+  
+   new
+  
+  AssertionError();
+ 
+ 
+  }
+ 
+
+

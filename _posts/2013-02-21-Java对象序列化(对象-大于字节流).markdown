@@ -1,0 +1,14 @@
+---
+layout: post
+title: "Java对象序列化(对象->字节流)"
+date: 2013-02-21 19:51:00 
+comments: true
+categories: []
+tags: []
+description: "Java对象序列化(对象->字节流)"
+keywords: 
+---
+
+
+
+

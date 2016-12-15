@@ -1,0 +1,71 @@
+---
+layout: post
+title: "Linkify 添加链接"
+date: 2015-08-12 15:06:00 
+comments: true
+categories: []
+tags: []
+description: "Linkify 添加链接"
+keywords: 
+---
+
+
+ 
+  Linkify.addLinks(
+  
+   mDisclaimContent
+  
+  , Pattern.compile(
+  
+   "AC Milan"
+  
+  , 0),
+  
+   "mihome://"
+  
+  ,
+ 
+ 
+  
+   null
+  
+  ,
+  
+   new
+  
+  TransformFilter() {
+ 
+ 
+  
+  
+ 
+ 
+  
+   @Override
+  
+ 
+ 
+  
+   public
+  
+  String transformUrl(Matcher match, String url) {
+ 
+ 
+  
+   return
+  
+  
+   "mihome://home.mi.com/test"
+  
+  ;
+ 
+ 
+  }
+ 
+ 
+  });
+ 
+ 
+ 
+
+

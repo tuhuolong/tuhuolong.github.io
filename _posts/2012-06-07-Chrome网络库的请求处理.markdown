@@ -1,0 +1,503 @@
+---
+layout: post
+title: "Chrome网络库的请求处理"
+date: 2012-06-07 11:50:00 
+comments: true
+categories: [网络]
+tags: [网络]
+description: "Chrome网络库的请求处理"
+keywords: 网络
+---
+
+
+ 
+  ResourceLoaderAndroid::start
+  
+   ->;WebUrlLoader::start (或者 clientAndroid->;webFrame()->;startLoadingResource)
+   
+    ->;WebUrlLoaderClient::start
+    
+    
+   
+  
+ 
+ 
+  
+   
+   
+   创建一个网络线程来处理请求
+  
+ 
+ 
+  
+   ->;thread->;message_loop()->;PostTask(FROM_HERE, NewRunnableMethod(m_request.get(), &WebRequest::start));
+  
+ 
+ 
+  
+   ---------------------------------------------------------------------------------
+  
+ 
+ 
+  
+   网络线程
+  
+ 
+ 
+  ->;WebRequest::start
+  
+   ->;net::URLRequest::start
+   
+    
+    
+    根据URL类型创建不同的Job,并启动URLRequestXXXXJob::Start
+    
+    
+   
+  
+ 
+ 
+  
+   【Http】
+   
+   
+  
+  
+   ->;URLRequestHttpJob::Start
+   
+   
+  
+  
+   ->;AddExtraHeaders()
+   
+   
+  
+  
+   ->;取Cookie
+  
+ 
+ 
+  
+   ->;创建HttpCacheTransaction
+  
+ 
+ 
+  
+  
+ 
+ 
+  
+   
+    HttpCacheTransaction
+   
+  
+ 
+ 
+  
+   ->;启动事务HttpCache::Transaction::Start
+  
+ 
+ 
+  
+   ->;循环Doloop() 状态机
+  
+ 
+ 
+  
+   do {
+   
+    switch (state) {
+    
+     Do
+     
+      GetBackend
+     
+     ();
+     
+      DoGetBackendComplete(rv);
+      
+       Do
+       
+        SendRequest
+       
+       ();
+       
+        DoSendRequestComplete(rv);
+        
+         Do
+         
+          SuccessfulSendRequest
+         
+         ();
+         
+          Do
+          
+           NetworkRead
+          
+          ();
+          
+           DoNetworkReadComplete(rv);
+           
+            Do
+            
+             InitEntry
+            
+            ();
+            
+             Do
+             
+              OpenEntry
+             
+             ();
+             
+              DoOpenEntryComplete(rv);
+              
+               Do
+               
+                CreateEntry
+               
+               ();
+               
+                DoCreateEntryComplete(rv);
+                
+                 Do
+                 
+                  DoomEntry
+                 
+                 ();
+                 
+                  DoDoomEntryComplete(rv);
+                  
+                   Do
+                   
+                    AddToEntry
+                   
+                   ();
+                   
+                    DoAddToEntryComplete(rv);
+                    
+                     Do
+                     
+                      NotifyBeforeSendHeaders
+                     
+                     ();
+                     
+                      DoNotifyBeforeSendHeadersComplete(rv);
+                      
+                       Do
+                       
+                        StartPartialCacheValidation
+                       
+                       ();
+                       
+                        Do
+                        
+                         CompletePartialCacheValidation
+                        
+                        (rv);
+                        
+                         Do
+                         
+                          UpdateCachedResponse
+                         
+                         ();
+                         
+                          DoUpdateCachedResponseComplete(rv);
+                          
+                           Do
+                           
+                            OverwriteCachedResponse
+                           
+                           ();
+                           
+                            Do
+                            
+                             TruncateCachedData
+                            
+                            ();
+                            
+                             DoTruncateCachedDataComplete(rv);
+                             
+                              Do
+                              
+                               TruncateCachedMetadata
+                              
+                              ();
+                              
+                               DoTruncateCachedMetadataComplete(rv);
+                               
+                                Do
+                                
+                                 PartialHeadersReceived
+                                
+                                ();
+                                
+                                 Do
+                                 
+                                  CacheReadResponse
+                                 
+                                 ();
+                                 
+                                  DoCacheReadResponseComplete(rv);
+                                  
+                                   Do
+                                   
+                                    CacheWriteResponse
+                                   
+                                   ();
+                                   
+                                    Do
+                                    
+                                     CacheWriteTruncatedResponse
+                                    
+                                    ();
+                                    
+                                     DoCacheWriteResponseComplete(rv);
+                                     
+                                      Do
+                                      
+                                       CacheReadMetadata
+                                      
+                                      ();
+                                      
+                                       DoCacheReadMetadataComplete(rv);
+                                       
+                                        Do
+                                        
+                                         CacheQueryData
+                                        
+                                        ();
+                                        
+                                         DoCacheQueryDataComplete(rv);
+                                         
+                                          Do
+                                          
+                                           CacheReadData
+                                          
+                                          ();
+                                          
+                                           DoCacheReadDataComplete(rv);
+                                           
+                                            Do
+                                            
+                                             CacheWriteData
+                                            
+                                            (rv);
+                                            
+                                             DoCacheWriteDataComplete(rv);
+                                             
+                                              }
+                                              
+                                               } while (rv != ERR_IO_PENDING && next_state_ != STATE_NONE);
+                                              
+                                             
+                                            
+                                           
+                                          
+                                         
+                                        
+                                       
+                                      
+                                     
+                                    
+                                   
+                                  
+                                 
+                                
+                               
+                              
+                             
+                            
+                           
+                          
+                         
+                        
+                       
+                      
+                     
+                    
+                   
+                  
+                 
+                
+               
+              
+             
+            
+           
+          
+         
+        
+       
+      
+     
+    
+   
+  
+ 
+ 
+  
+  
+ 
+ 
+  
+   ->;
+  
+  
+   创建HttpNeworkTransaction   (
+   
+    HttpCacheTransaction::
+   
+   
+    Do
+   
+   
+    SendRequest
+   
+   
+    )
+   
+  
+  
+  
+ 
+ 
+  
+   
+    HttpNeworkTransaction
+   
+   
+   
+  
+  
+   
+    ->;
+   
+   启动事务HttpNetworkTransaction::Start
+  
+ 
+ 
+  
+  
+ 
+ 
+  
+   ->;循环DoLoop() 状态机
+  
+ 
+ 
+  
+   do {
+   
+    switch (state) {
+    
+     Do
+     
+      CreateStream
+     
+     ();
+     
+      DoCreateStreamComplete(rv);
+      
+       Do
+       
+        InitStream
+       
+       ();
+       
+        DoInitStreamComplete(rv);
+        
+         Do
+         
+          GenerateProxyAuthToken
+         
+         ();
+         
+          DoGenerateProxyAuthTokenComplete(rv);
+          
+           Do
+           
+            GenerateServerAuthToken
+           
+           ();
+           
+            DoGenerateServerAuthTokenComplete(rv);
+            
+             Do
+             
+              BuildRequest
+             
+             ();
+             
+              DoBuildRequestComplete(rv);
+              
+               Do
+               
+                SendRequest
+               
+               ();     Socket阻塞发送
+               
+                DoSendRequestComplete(rv);
+                
+                 Do
+                 
+                  ReadHeaders
+                 
+                 ();    Socket阻塞读取
+                 
+                  DoReadHeadersComplete(rv);
+                  
+                   Do
+                   
+                    ReadBody
+                   
+                   ();         Socket阻塞读取
+                   
+                    DoReadBodyComplete(rv);
+                    
+                     Do
+                     
+                      DrainBodyForAuth
+                     
+                     
+                      Restart
+                     
+                     ();
+                     
+                      DoDrainBodyForAuthRestartComplete(rv);
+                      
+                       }
+                       
+                        } while (rv != ERR_IO_PENDING && next_state_ != STATE_NONE);
+                       
+                      
+                     
+                    
+                   
+                  
+                 
+                
+               
+              
+             
+            
+           
+          
+         
+        
+       
+      
+     
+    
+   
+  
+ 
+ 
+  
+  
+  
+   【Ftp】
+  
+ 
+
+

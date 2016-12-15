@@ -1,0 +1,14 @@
+---
+layout: post
+title: "脚本就是资源->下载->动态更新加载"
+date: 2013-06-05 16:01:00 
+comments: true
+categories: []
+tags: []
+description: "脚本就是资源->下载->动态更新加载"
+keywords: 
+---
+
+
+
+

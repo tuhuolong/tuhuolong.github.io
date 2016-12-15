@@ -1,0 +1,34 @@
+---
+layout: post
+title: "[res].xml格式"
+date: 2015-11-24 11:58:00 
+comments: true
+categories: []
+tags: []
+description: "[res].xml格式"
+keywords: 
+---
+
+
+ 
+  
+   
+  
+  
+   comipled.xml
+  
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

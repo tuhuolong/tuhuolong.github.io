@@ -1,0 +1,97 @@
+---
+layout: post
+title: "android异常处理:未处理异常->线程退出->检查异常->处理"
+date: 2015-05-13 02:30:00 
+comments: true
+categories: []
+tags: []
+description: "android异常处理:未处理异常->线程退出->检查异常->处理"
+keywords: 
+---
+
+
+ 
+  
+   
+    dvmDetachCurrentThread
+   
+  
+  
+   
+    dvmCheckException
+   
+  
+  
+   
+    threadExitUncaughtException
+   
+  
+  
+   
+    Thread.uncaughtHandler.uncaughtException
+   
+   /
+   
+    ThreadGroup.uncaughtException
+   
+  
+  
+   
+   
+  
+  
+   
+    Thread.defaultUncaughtHandler
+   
+  
+  private static class UncaughtHandler implements Thread.UncaughtExceptionHandler {
+        public void uncaughtException(Thread t, Throwable e) {
+            try {
+                // Don't re-enter -- avoid infinite loops if crash-reporting crashes.
+                if (mCrashing) return;
+                mCrashing = true;
+
+                if (mApplicationObject == null) {
+                    Slog.e(TAG, "*** FATAL EXCEPTION IN SYSTEM PROCESS: " + t.getName(), e);
+                } else {
+                    StringBuilder message = new StringBuilder();
+                    message.append("FATAL EXCEPTION: ").append(t.getName()).append("\n");
+                    final String processName = ActivityThread.currentProcessName();
+                    if (processName != null) {
+                        message.append("Process: ").append(processName).append(", ");
+                    }
+                    message.append("PID: ").append(Process.myPid());
+                    Slog.e(TAG, message.toString(), e);
+                }
+
+                // Bring up crash dialog, wait for it to be dismissed
+                ActivityManagerNative.getDefault().handleApplicationCrash(
+                        mApplicationObject, new ApplicationErrorReport.CrashInfo(e));
+            } catch (Throwable t2) {
+                try {
+                    Slog.e(TAG, "Error reporting crash", t2);
+                } catch (Throwable t3) {
+                    // Even Slog.e() fails!  Oh well.
+                }
+            } finally {
+                // Try everything to make sure this process goes away.
+                Process.killProcess(Process.myPid());
+                System.exit(10);
+            }
+        }
+    }
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

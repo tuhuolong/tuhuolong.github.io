@@ -1,0 +1,54 @@
+---
+layout: post
+title: "窗口事件处理"
+date: 2013-05-20 00:40:00 
+comments: true
+categories: []
+tags: []
+description: "窗口事件处理"
+keywords: 
+---
+
+
+ 
+  
+   
+    
+    
+   
+  
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   WMS（system_server进程）通过管道通知ViewRoot(应用进程)有事件发生，再通过共享内存传递数据
+  
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   
+    http://www.2cto.com/kf/201111/111715.html
+   
+  
+  
+  
+ 
+
+

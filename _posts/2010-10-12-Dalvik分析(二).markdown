@@ -1,0 +1,207 @@
+---
+layout: post
+title: "Dalvik分析(二)"
+date: 2010-10-12 19:30:00 
+comments: true
+categories: [function]
+tags: [function]
+description: "Dalvik分析(二)"
+keywords: function
+---
+
+
+ 
+  論軟體， Dalvik 算小物，但也非一時三刻能說的完。前篇談到 Dalvik 建 gDvm ，至此算是完成初始化。可開始執行 
+bytecode。Dalvik 在功能劃分算是明顯， vm/Jni.c 透過 JavaVM 和 JNIEnv ，提供 user 
+功能介面，一方面則保全內部細節，不為外視。然而，別忘了初衷，我們欲了解 VM 的運作，至此只是摸清了外觀。而 VM 
+內部功能如銀河繁星，無法細數。必先擇一目標，集中分析，才不致於迷罔於程式碼間。對分析 VM 而言，我們最想知道，也最感興趣的，無非是執行 
+bytecode 。我們先直擊 bytecode interpreter。
+ 
+ 
+ 
+ 
+  Interpreter
+ 
+ 
+  在 gNativeInterface 裡列出了許多 CallXXXMethod() 之類的 function ，想必是通往 
+interpreter 的直達車。而在 main() function 
+裡，則是呼叫了(*evn)-&gt;CallStaticVoidMethod() 以執行 class 的 main。因此，直接朝 
+CallStaticVoidMethod() 下手也是合情合理。此卻發現，找不到 CallStaticVoidMethod() 
+在何處定義。這通常意謂著，一、CallStaticVoidMethod() 是透過巨集定義，二、由其它工具在 build 
+時產生。兩者都使的找不到定義 CallStaticVoidMethod() 的位置，這時可搜尋部分字串，即可發現其定義位置。
+ 
+ 
+  此列中，我發覺 CallXXXXMethod() 中的 XXXX 有好幾個版本。應該是有個集巨，以 XXXX 為參數，產生這些 function
+ 。於是我挑了 StaticVoid 進行 grep，結果找不到。於是我又試了 Void 當作
+  
+   關
+鍵字
+  
+  ，終於發現 Jni.c 裡，有幾個地方呼叫了巨集，並以 Void 當作參數。於是發現了
+ 
+ 001	CALL_STATIC(void
+, Void, , , false);
+ 
+  應為定義 CallStaticVoidMethod() 的位置。又查
+ 
+ 001	#define CALL_STATIC(_ctype, _jname, _retfail, _retok, _isref)               /
+002	    static _ctype CallStatic##_jname##Method(JNIEnv* env, jclass clazz,     /
+003	        jmethodID methodID, ...)                                            /
+004	    {                                                                       /
+005	        JNI_ENTER();                                                        /
+006	        JValue result;                                                      /
+007	        va_list args;                                                       /
+008	        assert((ClassObject*) clazz == ((Method*)methodID)-&gt;clazz);         /
+009	        va_start(args, methodID);                                           /
+010	        dvmCallMethodV(_self, (Method*) methodID, NULL, &amp;result, args);     /
+011	        va_end(args);                                                       /
+012	        if
+ (_isref)                                                         /
+013	            result.l = addLocalReference(result.l);                         /
+014	        JNI_EXIT();                                                         /
+015	        return
+ _retok;                                                      /
+016	    }                                                                       /
+017	....
+ 
+  確實定義了這些 function 。這是
+  
+   C
+  
+  programmer 常用的手法，利用 macro 定義其它 function 。並以參數做為 function 名稱的一部分。其中 '##'
+ 則是將字串分隔開來，在 expansion 之後，將結果組合在一起。如上例， _jname 若為 Void ，則第一行組出 
+CallStaticVoidMethod 名稱。
+ 
+ 
+  從字面上，我們能猜的出， dvmCallMethodV() 應該和執行 bytecode 關係密切。這時，在 Emacs 再按下 alt+. 
+，直接跳到 dvmCallMethodV() 的第一行，是在 vm/interp/Stack.c 檔案裡。看來這個 function 和 
+stack 有關。快速描視一次 function ，會發現幾個引人注意的字眼
+ 
+ 
+  
+   dvmIsNativeMethod()
+   
+    
+     (*method-&gt;nativeFunc)(...)
+    
+    
+     dvmInterpret()
+    
+   
+  
+  
+   dvmPopFrame()
+  
+ 
+ 
+  dvmIsNativeMethod() 分明就是判斷 method 是否為 native method (JNI)，若是 native 則呼叫 
+method 的 nativeFunc()。若非 native 則直接呼叫 dvmInterpret()，在此眼冒火光， 「Interpret」
+  
+   關
+鍵字
+  
+  頂上罩著一片祥雲。dvmIsNativeMethod() 暗示了這是一個狀態的測試，「IS」是一個常見的
+  
+   關
+鍵字
+  
+  ，一般我們會用 IsBusy() 、 IsClear() .... IsXXX() 
+命名測試物件、系統狀態的巨集、函數。其實，多看別人的 code 是一項非常重要的修練。雖然很多 programmer 並不看別人的 code 
+，但每個人都閉門造車，開發自已的習慣，那必定南轅北轍，如何能夠被了解。多看別人的 code ，潛移默化之下，自然能寫出更易於閱讀的程式碼。
+ 
+ 
+  dvmPopFrame() 暗示我們前面應該有個地方會造一個 frame。frame 是程式在呼叫函數的過程，在 stack 
+裡為該每次呼叫所保留的一塊空間，以儲存 function 狀態。這應該不用我多說，不知道可以去 search。search 
+還看不懂，表示要多讀點書。回到正題，往回一看，在function 的前面有一行
+ 
+ 001	    clazz = callPrep(self, method, obj, false);
+ 
+  call + Prep ，好像有準備 frame 的意涵，進去一看，在 callPrep() 頂頭的註解裡，明白寫了
+ 
+  * Pushes a call frame on, advancing self-&amp;gt;curFrame.                            
+ 
+  看來是猜的沒錯。但我們暫時對 frame 沒興趣，回到 dvmCallMethodV()。
+ 
+ 
+  於是我們直接看 dvmInterpret() 的內容，在 vm/interp/Interp.c 裡。我們注意到幾個發亮的大字
+ 
+ 
+  
+   interpState
+  
+  
+   stdInterp
+   
+    
+     dvmMterpStd
+    
+    
+     dvmInterpretStd
+    
+   
+  
+ 
+ 
+  InterpState 看起來就是準備 interpret 所需的資料，有
+ 
+ 
+  
+   method
+  
+  
+   fp
+  
+  
+   pc
+  
+  
+   entryPoint
+  
+ 
+ 
+  個個看起來皆是和 Interpret 執行的狀態相關。往下看，stdInterp 依據 gDvm 的內容，決定是 dvmMterpStd 或 
+dvmInterpretStd 。而在後面看到
+ 
+ 001	change = (*stdInterp)(self, &amp;interpState);
+ 
+  看來 stdInterp 應該就是 Interpret 的進入點。並且有兩種 Interpreter 可以選。另外還有一個 debug 的版本 
+dvmInterpretDbg() ，但目前對 debug 不感興趣，略過。
+ 
+ 
+  若查一下 dvmInterpretStd() 和 dvmInterpretStd() 的位置，會發現都在 vm/mterp/ 
+目錄之下。dvmInterpretStd() 使用 ctags 找不到，於是用 grep 試試，會發現
+ 
+ 001	./mterp/out/InterpC-portstd.c:#define INTERP_FUNC_NAME dvmInterpretStd
+002	./mterp/portable/portstd.c:#define INTERP_FUNC_NAME dvmInterpretStd
+ 
+  在 vm/mterp/ 下的兩個檔案，用巨集 alias 這個符號，應該是有其它地方使用 INTERP_FUNC_NAME 定義了 
+function 內容。
+ 
+ 
+  之前聽說了， Dalvik 針對不同的平台，有特別用 assembly 進行最佳化。 dvmInterpretStd 和 dvmMpretStd
+ 兩個版本的 interpreter 應該和此有關。觀察一下 vm/mterp 目錄下，有
+ 
+ 
+  
+   armv4
+  
+  
+   armv5te
+  
+  
+   x86
+  
+  
+   ...
+  
+ 
+ 
+  等平台有關的字眼，看是所言不假。
+ 
+ 
+  在 trace code 時，其實用到了許多直覺。直覺有高低之分，差異來自於平常知識累積。只要 trace 
+時，保靈活的聯想力，特殊字眼自然會和腦中知識聯結，進而發生直覺。這些知識有時不是來自於書本，道聽途說也可能變成有用的知識。像是前面提到針對不同 
+CPU 進行 optimize 的傳言。
+ 
+
+

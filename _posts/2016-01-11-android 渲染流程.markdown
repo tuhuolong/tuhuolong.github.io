@@ -1,0 +1,95 @@
+---
+layout: post
+title: "android 渲染流程"
+date: 2016-01-11 21:36:00 
+comments: true
+categories: []
+tags: []
+description: "android 渲染流程"
+keywords: 
+---
+
+
+ 
+  measure    (first|layoutRequest)   (main thread)
+    onMeasure
+    setMeasuredDimension
+  layout     (first|layoutRequest)   (main thread)
+    setFrame
+    onLayout
+  draw       (dirty|animation)       (main thread)  ->; display list
+    drawBackground
+    onDraw            (自身)
+    dispatchDraw      (子view)
+    onDrawScrollBars
+  sync                               (render thread)
+  process   (display list)           (render thread): draw command--opengl api-->;gpu command
+  send and wait (glFlush/glFinish)   (render thread) driver : send gpu command buffer->;gpu command queue (render thread blocked)
+  execute                            (gpu) : render thread blocked
+  swap buffer   (glSwapBuffers)      (render thread) ->; (surfaceflinger)
+  composition                        (surfaceflinger)
+  
+   
+    
+     
+      
+       
+        
+         
+          
+           
+            
+             
+              
+               
+                
+                 深入了解Android Graphics Pipeline
+                
+                
+                 
+                  
+                   Let’s talk about eglMakeCurrent, eglSwapBuffers, glFlush, glFinish
+                  
+                  
+                   
+                    
+                     OpenGL Synchronization
+                    
+                    
+                     
+                      
+                     
+                    
+                   
+                  
+                 
+                
+               
+              
+             
+            
+           
+          
+         
+        
+       
+      
+     
+    
+   
+  
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

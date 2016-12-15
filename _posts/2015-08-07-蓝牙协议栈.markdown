@@ -1,0 +1,36 @@
+---
+layout: post
+title: "蓝牙协议栈"
+date: 2015-08-07 13:13:00 
+comments: true
+categories: [android]
+tags: [android]
+description: "蓝牙协议栈"
+keywords: android
+---
+
+
+ 
+  
+   
+  
+  
+   
+    Android 4.2蓝牙介绍
+   
+  
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

@@ -1,0 +1,542 @@
+---
+layout: post
+title: "内存映射(mmap系统调用)"
+date: 2010-09-15 08:56:00 
+comments: true
+categories: [file]
+tags: [file]
+description: "内存映射(mmap系统调用)"
+keywords: file
+---
+
+
+ 
+  
+   
+    映射虚拟内存-->;物理内存/Swap/文件
+   
+  
+ 
+ 
+ 
+ 
+  
+   文件映射到内存,内存访问取代IO访问
+  
+ 
+ 
+ 
+ 
+  
+   可以映射同一个文件以(进程)共享内存
+  
+ 
+ 
+ 
+ 
+  Linux进程虚拟地址空间---(分成)-->;虚拟内存区
+ 
+ 
+  虚拟内存区(VMA)表:进程所有的虚拟内存区
+ 
+ 
+  内存映射:创建一个虚拟内存区(VMA),映射文件
+ 
+ 
+ 
+ 
+  映射文件:外部程序调用VMA的(操作函数集中)操作函数访问映射文件的VMA
+ 
+ 
+ 
+ 
+ 
+ 
+  可以通过addr参数映射使用某个特定的内存地址。如果它的取值是零，结果指针将自动分配
+ 
+ 
+ 
+ 
+  mmap函数是unix/linux下的系统调用，mmap系统调用并不是完全为了用于共享内存而设计的。它本身提供了不同于一般对普通文件的访问方式，进程可以像读写内存一样对普通文件的操作。而Posix或系统V的共享内存IPC则纯粹用于共享目的，当然mmap()实现共享内存也是其主要应用之一。
+  
+  mmap系统调用使得进程之间通过映射同一个普通文件实现共享内存。普通文件被映射到进程地址空间后，进程可以像访问普通内存一样对文件进行访问，不必再调用read()，write（）等操作。mmap并不分配空间, 只是将文件映射到调用进程的地址空间里, 然后你就可以用memcpy等操作写文件, 而不用write()了.写完后用msync()同步一下, 你所写的内容就保存到文件里了. 不过这种方式没办法增加文件的长度, 因为要映射的长度在调用mmap()的时候就决定了.
+ 
+ 
+  简单说就是把一个文件的内容在内存里面做一个映像，内存比磁盘快些。
+  
+  基本上它是把一个档案对应到你的virtual memory 中的一段，并传回一个指针。
+ 
+ 
+  以后对这段 memory 做存取时，其实就是对那个档做存取。
+  
+  它就是一种快速 file I/O 的东东，而且使用上和存取 memory 一样方便，只不过会占掉你的 virutal memory。
+  
+  #include <sys/types.h>;
+  
+  #include <sys/stat.h>; //文件状态结构
+  
+  #include <unistd.h>;
+  
+  #include <sys/mman.h>; //mmap头文件
+ 
+ 
+  
+   void * mmap(void *start, size_t length, int prot , int flags, int fd, off_t offset)
+  
+  ;
+ 
+ 
+  参数：
+  
+  
+   start
+  
+  ：映射区的开始地址。
+  
+  
+   length
+  
+  ：映射区的长度。
+  
+  
+   prot
+  
+  ：期望的内存保护方式，不能与文件的打开模式冲突。是以下的某个值，可以通过or运算合理地组合在一起
+  
+  PROT_EXEC //页内容可以被执行
+  
+  PROT_READ  //页内容可以被读取
+  
+  PROT_WRITE //页可以被写入
+  
+  PROT_NONE  //页不可访问
+  
+  
+   flags
+  
+  ：指定映射对象的类型，映射选项和映射页是否可以共享。它的值可以是一个或者多个以下位的组合体
+  
+  MAP_FIXED //使用指定的映射起始地址，如果由start和len参数指定的内存区重叠于现存的映射空间，重叠部分将会被丢弃。如果指定的起始地址不可用，操作将会失败。并且起始地址必须落在页的边界上。
+  
+  MAP_SHARED //与其它所有映射这个对象的进程共享映射空间。对共享区的写入，相当于输出到文件。直到msync()或者munmap()被调用，文件实际上不会被更新。
+  
+  MAP_PRIVATE //建立一个写入时拷贝的私有映射。内存区域的写入不会影响到原文件。这个标志和以上标志是互斥的，只能使用其中一个。
+  
+  MAP_DENYWRITE //这个标志被忽略。
+  
+  MAP_EXECUTABLE //同上
+  
+  MAP_NORESERVE //不要为这个映射保留交换空间。当交换空间被保留，对映射区修改的可能会得到保证。当交换空间不被保留，同时内存不足，对映射区的修改会引起段违例信号。
+  
+  MAP_LOCKED //锁定映射区的页面，从而防止页面被交换出内存。
+  
+  MAP_GROWSDOWN //用于堆栈，告诉内核VM系统，映射区可以向下扩展。
+  
+  MAP_ANONYMOUS //匿名映射，映射区不与任何文件关联。
+  
+  MAP_ANON //MAP_ANONYMOUS的别称，不再被使用。
+  
+  MAP_FILE //兼容标志，被忽略。
+  
+  MAP_32BIT //将映射区放在进程地址空间的低2GB，MAP_FIXED指定时会被忽略。当前这个标志只在x86-64平台上得到支持。
+  
+  MAP_POPULATE //为文件映射通过预读的方式准备好页表。随后对映射区的访问不会被页违例阻塞。
+  
+  MAP_NONBLOCK //仅和MAP_POPULATE一起使用时才有意义。不执行预读，只为已存在于内存中的页面建立页表入口。
+  
+  
+   fd
+  
+  ：有效的文件描述词。如果 MAP_ANONYMOUS被设定，为了兼容问题，其值应为-1。
+  
+  
+   offset
+  
+  ：被映射对象内容的起点。
+ 
+ 
+  返回说明:成功执行时，mmap()返回被映射区的指针，munmap()返回0。失败时，mmap()返回 MAP_FAILED[其值为(void *)-1]，munmap返回-1。errno被设为以下的某个值
+  
+  EACCES：访问出错
+  
+  EAGAIN：文件已被锁定，或者太多的内存已被锁定
+  
+  EBADF：fd不是有效的文件描述词
+  
+  EINVAL：一个或者多个参数无效
+  
+  ENFILE：已达到系统对打开文件的限制
+  
+  ENODEV：指定文件所在的文件系统不支持内存映射
+  
+  ENOMEM：内存不足，或者进程已超出最大内存映射数量
+  
+  EPERM：权能不足，操作不允许
+  
+  ETXTBSY：已写的方式打开文件，同时指定MAP_DENYWRITE标志
+  
+  SIGSEGV：试着向只读区写入
+  
+  SIGBUS：试着访问不属于进程的内存区
+ 
+ 
+ 
+ 
+  你可以通过addr参数请求使用某个特定的内存地址。如果它的取值是零，结果指针将将自动分配。这是推荐的做法，否则会降低程序的可移植性，因为不同系统上的可用地址范围是不一样的。你可以通过addr参数请求使用某个特定的内存地址。如果它的取值是零，结果指针将将自动分配。这是推荐的做法，否则会降低程序的可移植性，因为不同系统上的可用地址范围是不一样的。
+ 
+ 
+ 
+ 
+  int munmap(void *start, size_t length);
+ 
+ 
+  int msync(const void *start, size_t length, int flags);
+ 
+ 
+  如果开启记忆体对映是希望写入档案中，那麽修改过的记忆体会在一段时间内与档案稍稍有点不同。如果您希望立即将资料写入档案中，可使用msync。
+  
+  start为记忆体开始位置，length为长度。
+  
+  flags则有三个：
+  
+  MS_ASYNC : 请Kernel快将资料写入。
+  
+  MS_SYNC : 在msync结束返回前，将资料写入。
+  
+  MS_INVALIDATE : 让核心自行决定是否写入，仅在特殊状况下使用
+ 
+ 
+  例子:
+  
+  #include <sys/types.h>;
+  
+  #include <sys/stat.h>;
+  
+  #include <fcntl.h>;
+  
+  #include <stdio.h>;
+  
+  #include <unistd.h>;
+  
+  #include <sys/mman.h>;
+ 
+ 
+  int main()
+  
+  {
+  
+  int fd;
+  
+  if ( (fd = open("./file", O_RDWR|O_CREAT, S_IRWXU)) < 0){
+  
+  printf("open file wrong!");
+  
+  exit(1);
+  
+  }
+  
+  
+  struct stat file_stat;
+  
+  if ( fstat( fd, &file_stat) < 0 )
+  
+  {
+  
+  printf(" fstat wrong");
+  
+  exit(1);
+  
+  }
+ 
+ 
+  void *start_fp;
+  
+  if( ( start_fp = mmap(NULL, file_stat.st_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0 )) == MAP_FAILED)
+  
+  {
+  
+  printf("mmap wrong");
+  
+  exit(0);
+  
+  }
+ 
+ 
+  snprintf( (char *)start_fp, 4, "test");
+  
+  msync( start_fp, file_stat.st_size, MS_ASYNC);
+ 
+ 
+  if ( munmap( start_fp, file_stat.st_size ) < 0 )
+  
+  {
+  
+  printf("munmap wrong");
+  
+  exit(1);
+  
+  }
+  
+  }
+ 
+ 
+  mmap这个系统调用可以直接对底层的操作，映射硬件地址，实现用户层驱动，但是它的实现方式是怎样对底层操作的呢？
+ 
+ 
+  首先看个简单的对i/o操作的程序：
+ 
+ 
+  #include <sys/types.h>;
+ 
+ 
+  #include <stdio.h>;
+ 
+ 
+  #include <sys/ioctl.h>;
+ 
+ 
+  #include <sys/mman.h>;
+ 
+ 
+  #include <fcntl.h>;
+ 
+ 
+  #include <memory.h>;
+ 
+ 
+  #define DEVICE_FILE_NAME "at91_gpio"
+ 
+ 
+  #define    AT91_SYS          0xfffff000
+ 
+ 
+  #define    AT91_SYS_2        0xfffc0000
+ 
+ 
+  #define    AT91C_PIOB_PER    0x600
+ 
+ 
+  #define    AT91C_PIOB_OER    0x610
+ 
+ 
+  #define    AT91C_PIOC_CODR   0x634
+ 
+ 
+  #define    AT91C_PIOC_SODR   0x630
+ 
+ 
+  #define    AT91C_PIOA_ASR    0x470
+ 
+ 
+  #define    AT91C_PIOA_PDR    0x404
+ 
+ 
+  #define    AT91C_PIOA_PSR    0x408
+ 
+ 
+  #define    AT91C_PIOA_ODR    0x414
+ 
+ 
+  #define    AT91C_PIOA_IFDR   0x424
+ 
+ 
+  #define    AT91C_PIOA_CODR   0x434
+ 
+ 
+  #define    AT91C_PIOA_IDR    0x444
+ 
+ 
+  #define    AT91C_PIOA_MDDR   0x454
+ 
+ 
+  #define    AT91C_PIOA_PUER   0x464
+ 
+ 
+  #define    AT91C_PIOA_OWDR   0x4A4
+ 
+ 
+  #define    AT91C_PIOA_ABSR   0x478
+ 
+ 
+  #define INT *(volatile unsigned int*)
+ 
+ 
+  void * map_base;
+ 
+ 
+  FILE *f;
+ 
+ 
+  int n,fd;
+ 
+ 
+  int main(int argc,char *argv[])
+ 
+ 
+  {
+ 
+ 
+  if((fd=open("/dev/mem",O_RDWR|O_SYNC))==-1){
+ 
+ 
+  return(-1);
+ 
+ 
+  }
+ 
+ 
+  map_base=mmap(0,0xff,PROT_READ|PROT_WRITE,MAP_SHARED,/
+ 
+ 
+  fd,AT91_SYS);
+ 
+ 
+  INT (map_base+AT91C_PIOB_PER)=(1<<27);//使能寄存器
+ 
+ 
+  INT (map_base+AT91C_PIOB_OER)=(1<<27);//输出使能寄存器
+ 
+ 
+  while(1){
+ 
+ 
+  INT (map_base+AT91C_PIOB_CODR)=(1<<27);//IO口置高
+ 
+ 
+  sleep(1);
+ 
+ 
+  INT (map_base+AT91C_PIOB_SODR)=(1<<27);//IO口置低
+ 
+ 
+  sleep(1);
+ 
+ 
+  }
+ 
+ 
+  close(fd);
+ 
+ 
+ 
+ 
+  munmap(map_base,0xff);//解除映射关系
+ 
+ 
+  }
+ 
+ 
+  在这个程序中，首先打开了/dev/mem,然后进行了mmap，也就是对整个物理内存的映射。接下来的操作就根据芯片手册，找到相应的物理地址，对物理地址直接操作。
+ 
+ 
+  其中有几个参数需要说明:
+ 
+ 
+  PROT_READ:区域可读；
+ 
+ 
+  PROT_WRITE：区域可写；
+ 
+ 
+  MAP_SHARED:对映射区域的写入数据会复制回文件内, 而且允许其他映射该文件的进程共享。
+ 
+ 
+ 
+ 
+  
+ 
+ 
+  书中对此图有些说明：在此图中，“起始地址”是mmap的返回值。在图中，映射存储区位于堆和栈之间：这属于实现细节，各种实现之间可能不同。
+ 
+ 
+ 
+ 
+  看了此图以后，大家对mmap的实现方式可能就清楚多了，应该对上面那个程序有更多的理解了吧。我们把物理地址都映射到内存中，然后对内存中的地址进行操作，通过MAP_SHARED参数，对映射区域的写入数据复制回文件内，从而达到了对IO口的操作。对于MAP_SHARED区磁盘文件的更新，在写到存储映射区时按内核虚存算法自动进行。
+ 
+ 
+  还有一点需要说明，因为映射文件的起动位移量受系统虚存页长度的限制，那么如果映射区的长度不是页长度的整数倍时，将如何呢？假定文件长12字节，系统页长为512字节，则系统通常提供512字节的映射区，其中后500字节被设为0。可以修改这 500字节，但任何变动都不会在文件中反映出来。
+ 
+ 
+ 
+ 
+  用户空间驱动的好处在于:
+ 
+ 
+ 
+ 
+  
+   
+    完整的 C 库可以连接. 驱动可以进行许多奇怪的任务, 不用依靠外面的程序(实现使用策略的工具程序, 常常随着驱动自身发布).
+   
+  
+  
+   
+    程序员可以在驱动代码上运行常用的调试器, 而不必走调试一个运行中的内核的弯路.
+   
+  
+  
+   
+    如果一个用户空间驱动挂起了, 你可简单地杀掉它. 驱动的问题不可能挂起整个系统, 除非被控制的硬件真的疯掉了.
+   
+  
+  
+   
+    用户内存是可交换的, 不象内核内存. 一个不常使用的却有很大一个驱动的设备不会占据别的程序可以用到的 RAM, 除了在它实际在用时.
+   
+  
+  
+   
+    一个精心设计的驱动程序仍然可以, 如同内核空间驱动, 允许对设备的并行存取.
+   
+  
+  
+   
+    如果你必须编写一个封闭源码的驱动, 用户空间的选项使你容易避免不明朗的许可的情况和改变的内核接口带来的问题.
+   
+  
+ 
+ 
+  但是用户空间的设备驱动的方法有几个缺点. 最重要的是:
+ 
+ 
+ 
+ 
+  
+   
+    中断在用户空间无法用. 在某些平台上有对这个限制的解决方法, 例如在 IA32 体系上的 vm86 系统调用.
+   
+  
+  
+   
+    只可能通过内存映射 /dev/mem 来使用 DMA, 而且只有特权用户可以这样做.
+   
+  
+  
+   
+    存取 I/O 端口只能在调用 ioperm 或者 iopl 之后. 此外, 不是所有的平台支持这些系统调用, 而存取/dev/port可能太慢而无效率. 这些系统调用和设备文件都要求特权用户.
+   
+  
+  
+   
+    响应时间慢, 因为需要上下文切换在客户和硬件之间传递信息或动作.
+   
+  
+  
+   
+    更不好的是, 如果驱动已被交换到硬盘, 响应时间会长到不可接受. 使用 mlock 系统调用可能会有帮助, 但是常常的你将需要锁住许多内存页, 因为一个用户空间程序依赖大量的库代码. mlock, 也, 限制在授权用户上.
+   
+  
+  
+   
+    最重要的设备不能在用户空间处理, 包括但不限于, 网络接口和块设备.
+   
+  
+ 
+ 
+  如你所见, 用户空间驱动不能做的事情毕竟太多. 感兴趣的应用程序还是存在: 例如, 对 SCSI 扫描器设备的支持( 由 SANE 包实现 )和 CD 刻录器 ( 由 cdrecord 和别的工具实现 ). 在两种情况下, 用户级别的设备情况依赖 "SCSI gneric" 内核驱动, 它输出了低层的 SCSI 功能给用户程序, 因此它们可以驱动它们自己的硬件.
+ 
+ 
+  一种在用户空间工作的情况可能是有意义的, 当你开始处理新的没有用过的硬件时. 这样你可以学习去管理你的硬件, 不必担心挂起整个系统. 一旦你完成了, 在一个内核模块中封装软件就会是一个简单操作了，由于用户空间的诸多限制，迫使我们不得不进行内核空间的设备驱动开发。不过在我的项目中，用mmap就可以解决所有问题了。
+ 
+
+

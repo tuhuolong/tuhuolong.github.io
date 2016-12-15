@@ -1,0 +1,209 @@
+---
+layout: post
+title: "走进Webkit"
+date: 2010-09-11 20:13:00 
+comments: true
+categories: [webkit]
+tags: [webkit]
+description: "走进Webkit"
+keywords: webkit
+---
+
+
+ 
+  转自
+  
+   http://blog.csdn.net/l12345678/archive/2010/04/05/5453039.aspx
+  
+ 
+ 
+ 
+ 
+  Webkit是开源项目，它的源代码可以去这里下载，
+  
+   http://webkit.org/building/checkout.html
+  
+  。Webkit是一个相当复杂的软件系统，打开源代码，可以看到里面有众多文件夹。但是Webkit的源代码组织得很好，虽然程序多，但是结构清楚。相对而言，Firefox浏览器使用的Gecko渲染机的源代码，个人的感觉比较乱，不容易理出头绪。
+ 
+ 
+  毛主席教导我们，“我们的方针是路线决定一切，人多，枪多，代替不了正确的路线。路线正确就有一切，路线不正确有了也可以丢掉。路线是个纲，纲举目张”。对于软件工程，主席的教导依然具有指导意义。不妨把主席的教导改动一下，“软件工程的方针是结构决定一切，代码多，功能多，代替不了正确的结构。结构正确了，不断改进以后就有一切，结构不正确，有了也可以丢掉。结构是个纲，纲举目张”。现代软件工程的语汇里，结构多半特指object-oriented的结构。Webkit源代码十分严格地遵循object-oriented的原则来组织，这样做的好处不仅仅有利于后续开发和维护，而且也便于研读源代码。
+ 
+ 
+  Webkit 源代码由三大部分组成，1. WebCore，2. WebKit(平台实现)，3. JavaScript。当输入一个HTML文件，WebCore的职责是解析每个HTML Tag，以及它们之间的从属关系，生成一棵树状的数据结构（DOM Tree），然后结合HTML文件中指定的CSS定义，确定DOM Tree中每个节点的在整个页面中的位置，以及颜色字体等等，也就是布局与渲染。布局与渲染效果的确定，以属性和属性值的形式，存放在另一棵树状数据结构中，这另一棵树被称为Rendering Tree。通常情况下，Rendering Tree的结构与DOM Tree大致相同，基本上DOM Tree里面每一个节点，在Rendering Tree里都有对应的节点。
+ 
+ 
+  这里有两个疑问，1. 为什么既有DOM Tree，又有Rendering Tree，合二为一不是更省内存吗？2. Rendering Tree为什么要与DOM Tree保持一致？不一样又如何？这两个问题，我们稍后讨论。
+ 
+ 
+  Rendering Tree只是确定了该如何渲染HTML页面，有点像司令部里的参谋们制订作战计划。但是具体的渲染，包括画点画线字体等等，在不同的OS，甚至不同的硬件环境下，实现的方式各不相同，这就像冲锋陷阵，还得靠前线将士。Webkit源代码中的WebKit package，里面包含的程序，就是这些前线将士。WebKit package中有 win, mac,  gtk, qt, wx等等 subpackages，就是针对各个不同OSes，以及各种不同的跨平台的图形库，所采取的因地制宜的渲染手段。与各个不同的OSes相关的，不仅仅是渲染，还有鼠标移动和键盘点击等等用户触发的UI事件的捕捉。所有这些与具体Oses相关的程序，通通被放置在WebKit package中。
+ 
+ 
+  Webkit源代码中第三个主要部分，是JavaScript engine。JavaScript engine用来解析JavaScript代码，并执行。这个系列里不展开介绍JavaScript engine。
+ 
+ 
+  
+  
+   
+    
+     DOM Tree 与 Rendering Tree 是否必须一致？
+    
+   
+  
+ 
+ 
+  
+  “ 天下文章一大抄”，这话说来难听，但是却是实情。很少有文章从头到尾，字字原创，而绝大多数都是在消化整理前人和他人的知识基础上，添加自己的一点点发挥和创造而成。人类的文明进步，就是这样一点一滴，逐渐积累起来的。既然文章离不开引经据典，旁征博引，阅读文章的时候，也就免不了需要查阅相关文献。
+ 
+ 
+  
+  在Web出现以前，查阅文献是一件费时费力的事情。1989年3月，在欧洲原子能研究组织（CERN）工作的Tim Berners-Lee，提议在TCP/IP协议基础之上，建立一个相互链接的信息系统。这个建议很快发展成为万维网（World Wide Web，简称Web），极大地方便了文献的查阅。Web的核心，是hyperlink。在撰写网页时，可以对于某些词句，设置隐含的 hyperlinks。当读者点击这些词句时，计算机就会根据词句背后隐含的hyperlink，自动打开另一个网页。请注意“隐含的”这个词，这意味着文章的显示（Presentation），与文章的内容（Content）并不完全一致。
+ 
+ 
+  
+  Tim Berners-Lee考虑到这一问题，于是建议给每个Web网页制订一个规范，这个规范就是“超文本标识语言”，简称HTML。最初的HTML制订了 22个标识，标注两方面的功能，1. 内容，包括引用，2. 显示格式。在同一份HTML文件里，把内容和格式混杂在一起，这是一个设计错误。20年过去了，现在的HTML文件，基本上是以内容为主，格式被分离出去，由CSS定义。除此之外，还增加了与读者互动的动作，这些互动动作，通常由JavaScript定义。
+ 
+ 
+  
+  为什么分离比合并好？同一份内容，针对不同的读者，可以通过不同的CSS，改变显示的方式，举几个例子。针对新人类，可以用卡通图标替代某些特定文字。针对老派读者可以换用大号字体，从上往下，从右往左排版。对于正在开车的听众，可以用朗诵替代文字显示。
+ 
+ 
+  内容与格式分离，并不等同于DOM Tree与Rendering Tree并存。假如内容由HTML承载，格式由CSS定义，我们可以只用一棵树，不仅存放内容，也存放格式属性。DOM Tree与Rendering Tree分离，好处在于同一棵DOM Tree，可以对应多棵Rendering Trees，也就是同一个内容，可以由多种不同的方式来布局和渲染。在当今的浏览器里，一棵DOM Tree对应多棵Rendering Trees的情况不常见，因为同一个页面，通常只有一种风格的布局和渲染。但是在电子游戏中，同一个场景会有多个不同视角，譬如枪战游戏中，有枪手本人视角，有旁观者视角，还有俯瞰视角等等。换句话说，Webkit不仅满足了当今浏览器的普通需要，而且提供了一些尚没有被广泛利用的潜在的功能。把DOM Tree与Rendering Tree分离的做法，虽然浪费了一些内存空间，但是着眼于未来，Webkit这样的结构设计，为未来的发展埋下了伏笔。
+ 
+ 
+  目前而言，Rendering Tree的结构基本上与DOM Tree的保持一致，DOM Tree里每一个节点，在Rendering Tree都有对应节点，父子节点之间的继承关系也保持一致。但是Webkit的代码，给Rendering Tree结构的异化，也埋下了伏笔。Rendering Tree的结构，不一定与DOM Tree保持一致。举个例子，或许未来的网页可以提供个性化的编辑方式。当读者第一次打开某个页面的时候，看到的是标准的页面，也就是Rendering Tree与DOM Tree保持一致的页面。读者可以摘录网页中某些段落，删除不感兴趣的段落，改变着色，改变字体，甚至重新布局。以后再次造访这个页面时，这位读者就可以看到个性化的页面，而所谓个性化的实现方式，其实就是构筑另一棵Rendering Tree。假如他想恢复标准的网页，只需要重新调用标准的Rendering Tree，重新渲染一遍网页即可。在这个例子里，我们可以看到个性化的Rendering Tree，与DOM Tree保持一致的标准的Rendering Tree，两者并存的场景。
+ 
+ 
+  再举一个例子，通常的地图，都是俯瞰图，整个地图保持同一种视角。能不能在同一张地图中包含多个视角？听起来匪夷所思，但是有人尝试了这种新奇大胆的设想，见figure 1。如果套用DOM Tree和Rendering Tree的概念，可以解释为DOM Tree与Rendering Tree不完全一致。上半段的俯瞰视角的地图，对应的Rendering Tree的子树，与DOM Tree相关子树一一对应。但是下半段的平视视角的地图，对应的Rendering Tree的子树，是DOM Tree相关子树的一个子集，因为有些楼宇和道路，被前方的楼宇遮挡住了。
+ 
+ 
+  
+ 
+ 
+  Figure 1. Here-and-there map of Mahanttan
+ 
+ 
+ 
+ 
+ 
+ 
+  
+   
+    
+     WebKit的结构与解构
+    
+   
+  
+ 
+ 
+  从指定一个HTML文本文件，到绘制出一幅布局复杂，字体多样，内含图片音频视频等等多媒体内容的网页，这是一个复杂的过程。在这个过程中Webkit所做的一切，都是围绕DOM Tree和Rendering Tree这两个核心。上一章我们谈到这两棵树各自的功用，这一章，我们借一个简单的HTML文件，展示一下DOM Tree和Rendering Tree的具体构成，同时解剖一下Webkit是如何构造这两棵树的。
+ 
+ 
+  
+  
+ 
+ 
+  Figure 1. From HTML to webpage, and the underlying DOM tree and Rendering Tree.
+ 
+ 
+  1. DOM Tree 与 Rendering Tree 的结构
+ 
+ 
+  Figure 1中左上是一个简单的HTML文本文件，右上是Webkit Render engine绘制出来的页面。页面的内容包括一个标题，“AI”，一行正文，“Ape's Intelligence”，以及一幅照片。整个页面分成前后两个层面，标题和正文绘制在前一个层面，照片处于后一个层面。L君和我亦步亦趋地跟踪了，从解析这个HTML文本文件，到生成DOM Tree和Rendering Tree的整个流程，目的是为了了解DOM Tree和Rendering Tree的具体成份，以及构造的各个步骤。
+ 
+ 
+  先说Figure 1中左下角的DOM Tree。基本上HTML文本文件中每个tag，在webkit/webcore/html中都有一个class与之对应。譬如<HTML>; tag 对应HTMLHtmlElement，<HEAD>; tag 对应HTMLHeadElement，<STYLE>; tag 对应HTMLStyleElement 等等。比较特别的是DOM Tree的根节点，HTMLDocument，在HTML文本文件中没有哪个tag与之对应。关于HTMLDocument的作用，我们稍后介绍。整个 DOM Tree的结构，与HTML文本文件中各个tags的嵌套关系也一一对应。一言以蔽之，DOM Tree就是把HTML文本文件翻译成object树状结构。
+ 
+ 
+  需要强调的是，DOM Tree是一个通用数据结构，任何XML文本文件都可以翻译成DOM Tree，而不仅仅限于HTML文本文件。webkit/webcore/html 中林林总总html classes，基本上都是webkit/webcore/dom 中的某个class的子类，也就是说，/html 是 /dom的一个特例。这样的设计，为将来把Webkit拓展到HTML格式以外的页面的布局和渲染，埋下了伏笔。所以严格地讲，Figure 1中左下的DOM Tree，实际上是一个HTML DOM Tree。
+ 
+ 
+  再看Rendering Tree，显著的特点在于，
+ 
+ 
+  a. 整个Rendering Tree树状结构，与HTML DOM Tree树状结构一一对应。也就是说，几乎每个HTML DOM Tree中的节点，在Rendering Tree中都有对应的节点。节点与节点之间的父子或兄弟关系也一一对应。
+ 
+ 
+  例外的是，在HTML DOM Tree有HTMLStyleElement叶子节点，而在Rendering Tree中，没有相应的叶子节点。原因是，Rendering Tree各个节点，都涉及页面中某块区域的布局和渲染。而HTMLStyleElement，并不直接涉及某块区域的布局和渲染，HTML DOM Tree中HTMLStyleElement叶子节点包含的内容，已经融入Rendering Tree中RenderImage叶子节点的属性中去了。另外，因为Rendering Tree中不存在与HTMLStyleElement相应的叶子节点，所以，与HTMLHeadElement对应的节点也没有必要存在。
+ 
+ 
+  b. webkit/webcore/rendering中各个class与HTML tags并没有一一对应的关系。
+ 
+ 
+  Rendering Tree是一个通用的规划页面布局和渲染的机制，这个通用机制可以服务于HTML页面，但是并不仅仅限于为HTML页面服务，我们可以用 Rendering Tree来规划其它格式的页面的布局和渲染。以DOM Tree和Rendering Tree为核心的Webkit渲染机，是一个功能强大，扩展性良好的通用渲染机。它不仅可以用来绘制HTML页面，也可以用来渲染其它格式的页面，譬如可以用它来制作email阅读和管理器，制作数据库管理工具，甚至制作游戏界面。
+ 
+ 
+  稍微让人有点吃惊的是，对于 HTMLHtmlElement，HTMLBodyElement，HTMLHeadingElement和HTMLParagraphElement，在Rendering Tree中通通以RenderBlock呼应。如果说HTMLHeadingElement和HTMLParagraphElement的区别不大，仅仅是字体和对齐方式有些微小的差别，所以Rendering Tree可以用RenderBlock来统一应对。那么问题是，HTMLHtmlElement和HTMLBodyElement是两种容器，总是出现在 DOM Tree的中部，而从来不会作为叶子节点出现，对应于这样的容器节点，为什么Rendering Tree不另设一种class，与RenderBlock有所区别呢？不过话又说回来，这不是个大问题，最多是个美感的问题。
+ 
+ 
+  
+  
+  Figure 2. The construction sequence of the root of the DOM tree.
+ 
+ 
+  2. DOM Tree 与 Rendering Tree 的根节点
+ 
+ 
+ 
+ 
+  前一节中我们提到HTMLDocument是一个比较特殊的class，它是整个HTML DOM Tree的根节点，但是不对应任何HTML tag。JavaScript中经常出现的document，指的就是这个根。例如，
+ 
+ 
+  
+  “document.getElementById(x).style.background="yellow";”
+ 
+ 
+  HTML文本文件，通常是以<HTML>;开头，以</HTML>;结尾。但是<HTML>; tag并不对应DOM Tree的根节点，而是根以下的第一个子节点，即HTMLHtmlElement节点。
+ 
+ 
+  初看Figure 2 觉得有点意外，当用户在浏览器里打开一个空白页面的时候，立刻生成了DOM Tree的根节点HTMLDocument，与Rendering Tree的根节点RenderView。而这个时候，用户并没有给定URL，也就是说，对于浏览器来讲，这时候具体的HTML文本文件并不存在。根节点与具体HTML内容相脱节，或许暗示了Webkit的两个设计思路，
+ 
+ 
+  a. DOM Tree的根节点HTMLDocument，与Rendering Tree的根节点RenderView，可以重复利用。
+ 
+ 
+  当用户在同一个浏览器页面中，先后打开两个不同的URLs，也就是两个不同的HTML文本文时，HTMLDocument和RenderView两个根节点并没有发生改变，改变的是HTMLHtmlElement以下的子树，以及对应的Rendering Tree的子树。
+ 
+ 
+  为什么这样设计？原因是HTMLDocument和RenderView服从于浏览器页面的设置，譬如页面的大小和在整个屏幕中的位置等等。这些设置与页面中要显示什么的内容无关。同时HTMLDocument绑定HTMLTokenizer和HTMLParser，这两个构件也与某一个具体的HTML内容无关。
+ 
+ 
+  b. 同一个DOM Tree的根节点可以悬挂多个HTML子树，同一个Rendering Tree的根节点可以悬挂多个RenderBlock子树。
+ 
+ 
+  在我们目前所见到的浏览器中，每一个页面通常只显示一个HTML文件。虽然一个HTML文件可以分割成多个frames，每个frame承载一个独立的 HTML文件，但是从DOM Tree结构来讲，HTMLDocument根节点以下，只有一个子节点，这个子节点是HTMLHtmlElement，它领衔某个HTML文本文件对应的子树。Rendering Tree也一样，目前我们见到的网页中，一个RenderView根节点以下，也只有一个RenderBlock子节点。
+ 
+ 
+  但是Webkit的设计，却允许同一个根以下，悬挂多个HTML子树。虽然我们目前没有看到一个页面中，并存多个HTML文件，并存多个布局和渲染风格的情景，但是Webkit为将来的拓展留下了空间。前文中所设想的个性化，多皮肤，多视角的浏览器页面绘制，用Webkit实现起来难度不大。
+ 
+ 
+  
+  
+  Figure 3. The construction sequence of the DOM Tree and the Rendering Tree.
+ 
+ 
+  
+  3. DOM Tree 与 Rendering Tree 的构筑
+ 
+ 
+  HTMLDocument 根节点包含的最重要的构件是HTMLTokenizer，而HTMLTokenizer又包含HTMLParser这个构件。HTMLTokenizer 从前到后读取HTML文本文件中每一个字符，并从中提取出各个HTML tags以及它们的内容。而HTMLParser不仅负责HTML DOM Tree的构筑，而且也同时负责Rendering Tree的构筑。
+ 
+ 
+  在Figure 3中，从第8步到第11步，HTMLParser根据一个HTML Tag生成一个HTML DOM Tree节点。从第12步到第17步，生成相应的Rendering Tree的节点，并把它和HTML DOM Tree的节点勾连在一起。这张图的细节过多，读解不容易。Figure 4把第8步到第17步演示了一下。
+ 
+ 
+  
+  
+  Figure 4. An illustration of the construction of a DOM tree node and its corresponding Rendering Tree node.
+ 
+ 
+  值得注意的是，每当HTMLParser生成一个DOM Tree的节点的时候，相应地，也同时生成一个Rendering Tree节点。然后把它们两个新节点勾连在一起。换而言之，Rendering Tree与DOM Tree同步生长。
+ 
+ 
+  Webkit 值得赞赏的地方非常多，但是HTMLParser让DOM Tree和Rendering Tree同步生长的做法，却值得商榷。如果同步生长，那么Rendering Tree必然平铺直叙地刻板地忠实于DOM Tree。假设先生成DOM Tree，再生成Rendering Tree，把两者割裂开，就有机会让Webkit发挥更加奇妙的布局和渲染。平铺直叙固然符合大多数人在大多数时间里的阅读习惯，但是离经叛道的设计，也会有市场。一个例子就是上一章末尾处那张多视点的地图。如果让DOM Tree与Rendering Tree同步生长，这样的布局和渲染是难以想像的。
+ 
+ 
+  
+  
+ 
+
+

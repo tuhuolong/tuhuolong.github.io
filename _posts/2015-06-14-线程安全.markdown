@@ -1,0 +1,61 @@
+---
+layout: post
+title: "线程安全"
+date: 2015-06-14 23:45:00 
+comments: true
+categories: []
+tags: []
+description: "线程安全"
+keywords: 
+---
+
+
+ 
+  
+   
+    可见性: CPU缓存(register+cache)
+   
+  
+  
+   
+    volatile
+   
+   
+    synchronized
+   
+  
+  
+   
+    原子性
+   
+  
+  
+   
+    synchronized
+   
+  
+  
+   
+    有序性
+   
+  
+  
+   
+    synchronized
+   
+  
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

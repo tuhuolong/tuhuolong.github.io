@@ -1,0 +1,53 @@
+---
+layout: post
+title: "IBM  Java垃圾回收"
+date: 2010-11-03 14:38:00 
+comments: true
+categories: [ibm]
+tags: [ibm]
+description: "IBM  Java垃圾回收"
+keywords: ibm
+---
+
+
+ 
+ 
+ 
+ 
+ 
+  
+   垃圾回收策略,第1部分
+  
+ 
+ 
+  
+   垃圾回收策略,第2部分
+  
+ 
+ 
+ 
+ 
+ 
+ 
+  
+   出色的"清洁工具"--理解IBM Java垃圾回收器,第1部分:对象分配
+  
+ 
+ 
+  
+   出色的"清洁工具"--理解IBM Java垃圾回收器,第2部分:垃圾回收
+  
+ 
+ 
+  
+   出色的"清洁工具"--理解IBM Java垃圾回收器,第3部分:verbosegc和命令行参数
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+

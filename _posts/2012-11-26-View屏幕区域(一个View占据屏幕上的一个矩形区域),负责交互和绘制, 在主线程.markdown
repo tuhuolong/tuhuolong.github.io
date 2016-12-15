@@ -1,0 +1,14 @@
+---
+layout: post
+title: "View:屏幕区域(一个View占据屏幕上的一个矩形区域),负责交互和绘制, 在主线程"
+date: 2012-11-26 13:25:00 
+comments: true
+categories: []
+tags: []
+description: "View:屏幕区域(一个View占据屏幕上的一个矩形区域),负责交互和绘制, 在主线程"
+keywords: 
+---
+
+
+
+

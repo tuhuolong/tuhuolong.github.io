@@ -1,0 +1,282 @@
+---
+layout: post
+title: "Android应用程序签名详解"
+date: 2013-04-07 10:41:00 
+comments: true
+categories: []
+tags: []
+description: "Android应用程序签名详解"
+keywords: 
+---
+
+
+ 
+  
+   1、什么是签名？
+   
+   
+  
+  如果这个问题不是放在Android开发中来问，如果是放在一个普通的版块，我想大家都知道签名的含义。可往往就是将一些生活中常用的术语放在计算机这种专业领域，大家就开始迷惑了。计算机所做的事情，或者说编程语言所做的事情，不正是在尽可能地模拟现实吗？所以，计算机中所说的签名和生活中所说的签名在本质上是一样的，它所起到的作用也是一致的！
+  
+   让我们来看看，在现实生活中的签名。比如下面这张图片：
+   
+    
+     
+      这是女星孙俪的签名。签名就意味着在纸上或别处写下自己的名字，或者说在某处打上一个标记作为你自己的一种特有的标识，当别人看到这个签名的时候，他会知道这是和你有关的，而不是其它人。
+     
+    
+   
+  
+ 
+ 
+  
+   2、为什么要给Android应用程序签名？
+   
+   
+  
+  如果只能用一句简单的话语来回答这个问题的话，我会说：“这是Android系统所要求的”。
+  
+   Android系统要求每一个Android应用程序必须要经过数字签名才能够安装到系统中，也就是说如果一个Android应用程序没有经过数字签名，是没有办法安装到系统中的！Android通过数字签名来标识应用程序的作者和在应用程序之间建立信任关系，不是用来决定最终用户可以安装哪些应用程序。这个数字签名由应用程序的作者完成，并不需要权威的数字证书签名机构认证，它只是用来让应用程序包自我认证的。
+  
+ 
+ 
+  
+   3、为什么我开发的Android应用程序没有做什么签名也能在模拟器和手机上运行？
+   
+   
+  
+  你没有给Android应用程序签名并不代表Android应用程序没有被签名。为了方便我们开发调试程序，ADT会自动的使用debug密钥为应用程序签名。debug密钥？它在哪？debug密钥是一个名为debug.keystore的文件，它的位置：
+  
+   
+    系统盘符
+   
+   :/Documents and Settings/
+   
+    liufeng
+   
+   /.android/debug.keystore
+   
+    “
+    
+     liufeng
+    
+    ”对应于你自己的windows操作系统用户名，怎么样，是不是已经找到它了。这也就意味着，如果我们想拥有自己的签名，而不是让ADT帮我们签名的话，我们也要有一个属于自己的密钥文件（*.keystore）。
+   
+  
+ 
+ 
+  
+   4、Android应用程序签名步骤
+  
+  
+   
+    
+     1）准备工作
+    
+   
+   
+    apk的签名工作可以通过两种方式来完成：
+    
+     
+      1）通过ADT提供的图形化界面完成apk签名；
+      
+       2）完全通过DOS命令来完成apk签名
+       
+       
+      
+     
+     我比较喜欢第2）种方式，所以下面将讲解如何通过命令的方式完成apk签名。
+     
+      给apk签名一共要用到3个工具，或者说3个命令，分别是：keytool、jarsigner和zipalign，下面是对这3个工具的简单介绍：
+      
+       
+        1）keytool：生成数字证书，即密钥，也就是上面说到的扩展名为.keystore的那类文件；
+        
+         2）jarsigner：使用数字证书给apk文件签名；
+         
+          3）zipalign：对签名后的apk进行优化，提高与Android系统交互的效率(Android SDK1.6版本开始包含此工具)
+         
+        
+       
+       
+        从这3个工具的作用也可以看出，这3个工具的使用顺序。通常我们自己所开发的所有应用程序，都是使用同样的签名，即使用同一个数字证书，这就意味着：如果你是第一次做Android应用程序签名，上面的3个工具都将用到；但如果你已经有数字证书了，以后再给其它apk签名时，只需要用到jarsigner和zipalign就可以完成。
+        
+         为了方便使用上面3个命令，首先需要将上面3个工具所在路径添加到环境变量path中（我说的是为了方便使用，没有说必须要这么做）。怎么配置环境变量就不在此讲解了，这里需要说一下这3个工具默认所在的路径：
+         
+          
+           1）keytool：该工具位于jdk安装路径的bin目录下；
+           
+            2）jarsigner：该工具位于jdk安装路径的bin目录下；
+            
+             3）zipalign：该工具位于android-sdk-windows/tools/目录下
+             
+              
+               不知道大家是否注意到keytool和jarsigner两个工具是jdk自带的，也就意味着生成数字证书和文件签名不是Android的专利；另外从字面上理解jarsigner也能猜得出该工具主要是用来给jar文件签名的。
+              
+              
+              
+             
+            
+           
+          
+          
+           
+            2）生成未经签名的apk文件
+           
+           
+           
+          
+          既然我们要自己对apk进行签名，就不再需要ADT默认帮我们签名了。
+          
+           
+            
+             如何得到一个未经签名的apk文件呢？
+            
+            打开Eclipse，在Android工程名称上点击右键，依次选择“Android Tools” - “Export Unsigned Application Package ...”，然后选择一个存储位置保存即可。
+           
+          
+          这样就得到了一个未经签名的apk文件。
+          
+           
+            
+             3）使用keytool工具生成数字证书
+            
+            
+            
+           
+           
+            keytool -genkey -v
+            
+             -keystore liufeng.keystore
+            
+            
+             -alias liufeng.keystore
+            
+            -keyalg RSA -validity 20000
+           
+           
+            说明：
+            
+             1）keytool是工具名称，-genkey意味着执行的是生成数字证书操作，-v表示将生成证书的详细信息打印出来，显示在dos窗口中；
+             
+              2）-keystore liufeng.keystore 表示生成的数字证书的文件名为“liufeng.keystore”；
+              
+               3）-alias liufeng.keystore 表示证书的别名为“liufeng.keystore”，当然可以不和上面的文件名一样；
+               
+                4）-keyalg RSA 表示生成密钥文件所采用的算法为RSA；
+                
+                 5）-validity 20000 表示该数字证书的有效期为20000天，意味着20000天之后该证书将失效
+                 
+                  在执行上面的命令生成数字证书文件时，会提示你输入一些信息，包括证书的密码，示例如下：
+                  
+                   
+                    
+                     
+                      
+                       4）使用jarsigner工具为Android应用程序签名
+                      
+                     
+                     
+                      
+                       jarsigner -verbose
+                       
+                        -keystore liufeng.keystore
+                       
+                       -signedjar notepad_signed.apk notepad.apk
+                       
+                        liufeng.keystore
+                       
+                       
+                       
+                      
+                      说明：
+                      
+                       1）jarsigner是工具名称，-verbose表示将签名过程中的详细信息打印出来，显示在dos窗口中；
+                       
+                        2）-keystore liufeng.keystore 表示签名所使用的数字证书所在位置，这里没有写路径，表示在当前目录下；
+                        
+                         3）-signedjar notepad_signed.apk notepad.apk 表示给notepad.apk文件签名，签名后的文件名称为notepad_signed.apk；
+                         
+                          4）最后面的liufeng.keystore 表示证书的别名，对应于生成数字证书时
+                          
+                           -alias
+                           
+                            参数后面
+                           
+                          
+                          的名称
+                          
+                           
+                            
+                             5）使用zipalign工具优化已签名的apk
+                            
+                            
+                             （非必须但建议这么做）
+                            
+                            
+                            
+                           
+                           
+                            zipalign -v 4 notepad_signed.apk notepad_signed_aligned.apk
+                            
+                            
+                           
+                           说明：
+                           
+                            1）zipalign是工具名称，-v表示在DOS窗口打印出详细的优化信息；
+                            
+                             2）notepad_signed.apk notepad_signed_aligned.apk 表示对已签名文件notepad_signed.apk进行优化，优化后的文件名为notepad_signed_aligned.apk
+                            
+                           
+                          
+                         
+                        
+                       
+                      
+                     
+                    
+                   
+                  
+                 
+                
+               
+              
+             
+            
+           
+          
+         
+        
+       
+      
+     
+    
+   
+  
+ 
+ 
+  
+   
+    说明：
+   
+   如果你以前的程序是采用默认签名的方式（即debug签名），一旦换了新的签名应用将不能覆盖安装，必须将原先的程序卸载掉，才能安装上。
+  
+  因为程序覆盖安装主要检查两点：
+  
+   1）两个程序的入口Activity是否相同。两个程序如果包名不一样，即使其它所有代码完全一样，也不会被视为同一个程序的不同版本；
+   
+    2）两个程序所采用的签名是否相同。如果两个程序所采用的签名不同，即使包名相同，也不会被视为同一个程序的不同版本，不能覆盖安装。
+    
+     另外，可能有人可能会认为反正debug签名的应用程序也能安装使用，那也没有必要自己签名了嘛。千万不要这样想，debug签名的应用程序有这样两个限制，或者说风险：
+     
+      1）debug签名的应用程序不能在Android Market上架销售，它会强制你使用自己的签名；
+      
+       2）debug.keystore在不同的机器上所生成的可能都不一样，就意味着如果你换了机器进行apk版本升级，那么将会出现上面那种程序不能覆盖安装的问题。不要小视这个问题，如果你开发的程序只有你自己使用，当然无所谓，卸载再安装就可以了。但要是你的软件有很多使用客户，这就是大问题了，就相当于软件不具备升级功能！
+      
+     
+    
+   
+  
+ 
+
+

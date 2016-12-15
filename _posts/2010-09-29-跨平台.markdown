@@ -1,0 +1,22 @@
+---
+layout: post
+title: "跨平台"
+date: 2010-09-29 10:32:00 
+comments: true
+categories: [跨平台]
+tags: [跨平台]
+description: "跨平台"
+keywords: 跨平台
+---
+
+
+ 
+  (1)平台:(硬件)架构+操作系统
+ 
+ 
+ 
+ 
+  (2)跨平台一个主要原因:各种各样的(网络终端)平台
+ 
+
+

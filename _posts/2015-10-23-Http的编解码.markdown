@@ -1,0 +1,78 @@
+---
+layout: post
+title: "Http的编解码"
+date: 2015-10-23 00:50:00 
+comments: true
+categories: []
+tags: []
+description: "Http的编解码"
+keywords: 
+---
+
+
+ 
+  
+   
+    服务端肯定会进行一次urldecode(http协议规定)
+   
+  
+  
+   
+    
+     
+      
+     
+    
+   
+  
+  
+   客户端: urlencode或者不urlencode
+   
+    |
+    
+     |
+     
+      |
+      
+       \/
+       
+        服务器端->;urldecode->;上层
+       
+      
+     
+    
+   
+  
+  
+   path:
+   
+    space->;%20
+    
+     +
+    
+   
+  
+  
+   queryString:
+   
+    space->;+/%20
+    
+     +->;%2B
+    
+   
+  
+ 
+ 
+  $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i ').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+ 
+
+

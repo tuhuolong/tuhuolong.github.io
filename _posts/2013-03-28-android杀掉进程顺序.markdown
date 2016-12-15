@@ -1,0 +1,103 @@
+---
+layout: post
+title: "android杀掉进程顺序"
+date: 2013-03-28 21:43:00 
+comments: true
+categories: []
+tags: []
+description: "android杀掉进程顺序"
+keywords: 
+---
+
+
+ 
+  
+   Android的5个进程等级（Process Levels）
+   
+    1) Foreground Process
+    
+     正处于Activity Resume() 状态
+     
+      正处于与bound服务交互的状态
+      
+       正处于服务在前台运行的状态 ， （startForeground() 被调用）
+       
+        Service生命周期函数正在被执行 ( onCreate() , onStart() , onDestroy())
+        
+         BroadcastReceiver 正在执行onReceive()方法
+         
+          杀死Foreground Process 需要用户响应-因为这个安全优先级是最高的
+          
+           
+            2) Visible Process
+            
+             Activity 不在前端显示 ， 但也没有完全隐藏，能够看得见，比如弹出一个对话框 。(Input Method)
+             
+              一个bound到visible 或者 foreground 的activity的 Service
+              
+               
+                3) Service Process
+                
+                 正在运行的，不在上述两种状态的Service
+                 
+                  
+                   4) Background Process
+                   
+                    不可见状态的Activity进程，(onStop()被调用）
+                    
+                     
+                      5) Empty Process
+                      
+                       没有运行任何Components的进程，保留这个进程主要是为了缓存的需要
+                       
+                        
+                         具体的应用:
+                         
+                          1.不希望系统关掉sevice中断服务方法 ：
+                          
+                           如音乐sevice 启动sevice时调用startForeground()前台启动，不会被系统关掉，音乐会继续播放，除非通过人机交互手动确认关掉.
+                           
+                            2.空进程是为了做缓存，内存里记录一些值，下次打开快。
+                            
+                             3.如果又有Service又有Visible Activity怎么办？
+                             
+                              if a process hosts a service and a visible activity, the process is ranked as a visible process, not a service process.
+                              
+                               当进程既有Service 并且 有Visible Activity的时候，进程会被认为是Visible 进程 。
+                               
+                                得出结论：优先级高的为准。
+                               
+                              
+                             
+                            
+                           
+                          
+                         
+                        
+                       
+                      
+                     
+                    
+                   
+                  
+                 
+                
+               
+              
+             
+            
+           
+          
+         
+        
+       
+      
+     
+    
+   
+  
+  
+  
+ 
+
+

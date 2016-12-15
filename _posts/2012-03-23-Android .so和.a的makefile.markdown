@@ -1,0 +1,119 @@
+---
+layout: post
+title: "Android .so和.a的makefile"
+date: 2012-03-23 15:34:00 
+comments: true
+categories: [makefile]
+tags: [makefile]
+description: "Android .so和.a的makefile"
+keywords: makefile
+---
+
+
+ 
+  
+   
+    (1)编译动态库的模板
+   
+   
+   
+  
+ 
+ 
+  
+   LOCAL_PATH := $(call my-dir)
+  
+ 
+ 
+  
+  
+ 
+ 
+  
+   include $(CLEAR_VARS)
+  
+ 
+ 
+  
+   LOCAL_SRC_FILES:= tuhuolong.c
+  
+ 
+ 
+  
+   LOCAL_MODULE:= libtuhuolong
+  
+ 
+ 
+  
+   LOCAL_PRELINK_MODULE := false
+  
+ 
+ 
+  
+   #LOCAL_C_INCLUDES :=
+  
+ 
+ 
+  #LOCAL_STATIC_LIBRARIES :=
+  
+  
+ 
+ 
+  
+   #LOCAL_SHARED_LIBRARIES :=
+  
+ 
+ 
+  
+   include $(BUILD_SHARED_LIBRARY)
+  
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   (2)静态库的模板
+  
+ 
+ 
+ 
+ 
+  
+   LOCAL_PATH := $(call my-dir)
+  
+ 
+ 
+  include $(CLEAR_VARS)
+  
+   LOCAL_SRC_FILES:= tuhuolong.c
+   
+    LOCAL_MODULE:= libtuhuolong
+    
+     #LOCAL_C_INCLUDES :=
+     
+      #LOCAL_STATIC_LIBRARIES :=
+      
+       #LOCAL_SHARED_LIBRARIES :=
+       
+        include $(BUILD_STATIC_LIBRARY)
+        
+         
+         
+        
+       
+      
+     
+    
+   
+  
+ 
+ 
+  
+  
+ 
+
+

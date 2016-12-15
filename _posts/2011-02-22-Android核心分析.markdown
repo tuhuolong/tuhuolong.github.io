@@ -1,0 +1,170 @@
+---
+layout: post
+title: "Android核心分析"
+date: 2011-02-22 08:52:00 
+comments: true
+categories: [android]
+tags: [android]
+description: "Android核心分析"
+keywords: android
+---
+
+
+ 
+  
+   1. 方法论探讨之设计意图
+  
+ 
+ 
+  
+   2. 方法论探讨之概念空间篇
+  
+ 
+ 
+  
+   3. 手机之硬件形态
+  
+ 
+ 
+  
+   4. 手机的软件形态
+  
+ 
+ 
+  
+   5. Android基本空间划分
+  
+ 
+ 
+  
+   6. IPC框架分析（Binder，Service，Service manager）
+  
+ 
+ 
+  
+   7. Service详解
+  
+ 
+ 
+  
+   8. Android启动过程详解
+  
+ 
+ 
+  
+   9. Zygote Service详解
+  
+ 
+ 
+  
+   10.Android GWES基本原理篇
+  
+ 
+ 
+  
+   11.Android GWES消息系统篇
+  
+ 
+ 
+  
+   12.Android核心分析之Android GEWS窗口管理基本架构篇
+  
+ 
+ 
+  
+   13.Android GWES窗口管理详解
+  
+ 
+ 
+  
+   14.Android GWES输入系统篇
+  
+ 
+ 
+  
+   15.Android GWES输入系统之输入路径详解
+  
+ 
+ 
+  
+   16.Android电话系统-概述篇
+  
+ 
+ 
+  
+   17.Android电话系统之Rild服务详解
+  
+ 
+ 
+  
+   18.Android电话系统之GSMCallTracker
+  
+ 
+ 
+  
+   19.Android电话系统之RIL-Java
+  
+ 
+ 
+  
+   20.Android应用程序框架之无边界设计意图
+  
+ 
+ 
+  
+   21.Android应用框架之AndroidApplication
+  
+ 
+ 
+  
+   22.Android应用框架之Activity
+  
+ 
+ 
+  
+   22.Andoird GDI之基本原理及其总体框架
+  
+ 
+ 
+  
+   23.Android GDI之显示缓冲管理
+  
+ 
+ 
+  
+   24.Android GDI之共享缓冲区机制
+  
+ 
+ 
+  
+   25.Android GDI之共享缓冲区机制
+  
+ 
+ 
+  
+   26.Android GDI之SurfaceFlinger
+  
+ 
+ 
+  2
+  
+   7.Android GDI之SurfaceFlinger之动态结构示意图
+  
+ 
+ 
+  
+   28.Android GDI之Surface&Canvas
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+

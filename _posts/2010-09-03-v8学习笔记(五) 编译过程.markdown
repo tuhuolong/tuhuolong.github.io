@@ -1,0 +1,2699 @@
+---
+layout: post
+title: "v8学习笔记(五) 编译过程"
+date: 2010-09-03 15:56:00 
+comments: true
+categories: [token]
+tags: [token]
+description: "v8学习笔记(五) 编译过程"
+keywords: token
+---
+
+
+ 
+  
+   
+    
+     v8
+    
+   
+  
+  
+   
+    编译过程
+   
+  
+  
+   
+    
+     (parser.cc
+    
+   
+   
+    文件
+   
+   
+    
+     )
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+      1.
+     
+    
+   
+   
+    
+     创建编译环境
+    
+   
+   
+    
+     MakeAST()
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+    
+   
+   
+    解析器
+   
+   
+    
+     AstBuildingParser parser->;
+    
+   
+   
+    扫描器
+   
+   
+    
+     Scanner scanner_
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     
+     
+    
+   
+   
+    扫描器结构
+   
+   
+    
+     : (1)TokenDesc
+     
+     
+     current_
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     
+     
+     (2)TokenDesc
+     
+     
+     next_
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     
+     
+     (3)
+    
+   
+   
+    缓冲
+   
+   
+    
+     source_
+    
+   
+  
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   
+    
+     
+      2.
+     
+    
+   
+   
+    
+     语法分析
+    
+   
+   
+    
+     (
+    
+   
+   
+    包含词法分析
+   
+   
+    
+     ),
+    
+   
+   
+    创建抽象语法树
+   
+   
+    
+     (AST)FunctionLiteral-----(
+    
+   
+   
+    语句
+   
+   
+    
+     ,
+    
+   
+   
+    声明
+   
+   
+    
+     ,)
+    
+   
+  
+ 
+ 
+  
+   
+    MakeAST()->;ParseProgram()->;ParseSourceElements():
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+    
+   
+   
+    进入
+   
+   
+    
+     while
+    
+   
+   
+    循环
+   
+   
+    
+     ,
+    
+   
+   
+    每次解析一个
+   
+   
+    
+     JS
+    
+   
+   
+    语句
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+    
+   
+   
+    While(peek()!=end_token)
+   
+  
+ 
+ 
+  
+   
+    
+    
+    {
+   
+  
+ 
+ 
+  
+   
+    
+    
+   
+  
+  
+   Statement* stat = ParseStatement(NULL, CHECK_OK);//
+  
+  
+   解析一个语句
+  
+ 
+ 
+  
+   
+   
+   
+   
+   
+    if
+   
+   (stat == NULL || stat->;IsEmpty())
+   
+    continue
+   
+   ;//
+  
+  
+   函数声明语句不放入
+   
+    FunctionLiteral
+   
+  
+ 
+ 
+  
+   
+   
+   
+   
+  
+  
+   ……
+  
+ 
+ 
+  
+   
+   
+   
+   
+   processor->;Add(stat);//
+  
+  
+   放入最外层
+   
+    FunctionLiteral
+   
+   的
+   
+    ZoneList
+   
+  
+ 
+ 
+  
+   
+    
+    
+    }
+   
+  
+ 
+ 
+  
+   
+    
+     ParseStatement():
+    
+   
+   
+    解析一个语句
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     (1)
+    
+   
+   
+    根据下一个
+   
+   
+    
+     Token
+    
+   
+   
+    判断语
+   
+   
+    句类型
+   
+   
+    
+     ,
+    
+   
+   
+    并进入相应的语句解析函数
+   
+  
+ 
+ 
+  
+   switch
+  
+  
+   (peek()) //
+  
+  
+   取下一个
+   
+    Token
+   
+  
+ 
+ 
+  
+   {
+  
+ 
+ 
+  
+   
+    
+    
+   
+  
+  
+   case
+  
+  
+   Token::LBRACE:
+  
+ 
+ 
+  
+   
+   
+   
+   
+   
+    return
+   
+   ParseBlock(labels, ok);
+   
+   
+   //{}Block
+  
+  
+   语句
+  
+ 
+ 
+  
+   
+   
+   
+    case
+   
+   Token::CONST:
+   
+   
+  
+ 
+ 
+  
+   
+   
+   
+    case
+   
+   Token::VAR:
+  
+ 
+ 
+  
+   
+   
+   
+   
+   stmt = ParseVariableStatement(ok);
+   
+   
+   //
+  
+  
+   变量声明语句
+  
+ 
+ 
+  
+   
+   
+   
+   
+   
+    break
+   
+   ;
+  
+ 
+ 
+  
+   
+   
+   
+    case
+   
+   Token::SEMICOLON:
+  
+ 
+ 
+  
+   
+   
+   
+   
+   Next();
+  
+ 
+ 
+  
+   
+   
+   
+   
+   
+   
+   
+    return
+   
+   factory()->;EmptyStatement();
+   
+   
+   //
+  
+  
+   空语句
+  
+ 
+ 
+  
+   
+   
+   
+    case
+   
+   Token::IF:
+  
+ 
+ 
+  
+   
+   
+   
+   
+   stmt = ParseIfStatement(labels, ok);
+   
+   
+   //If
+  
+  
+   语句
+  
+ 
+ 
+  
+   
+   
+   
+   
+   
+    break
+   
+   ;
+  
+ 
+ 
+  
+   
+   
+   
+    case
+   
+   Token::DO:
+  
+ 
+ 
+  
+   
+   
+   
+   
+   stmt = ParseDoWhileStatement(labels, ok);
+   
+   
+   //Do
+  
+  
+   循环语句
+  
+ 
+ 
+  
+   
+   
+   
+   
+   
+    break
+   
+   ;
+  
+ 
+ 
+  
+   
+   
+   
+    case
+   
+   Token::WHILE:
+  
+ 
+ 
+  
+   
+   
+   
+   
+   stmt = ParseWhileStatement(labels, ok);
+   
+   
+   //While
+  
+  
+   循环语句
+  
+ 
+ 
+  
+   
+   
+   
+   
+   
+    break
+   
+   ;
+  
+ 
+ 
+  
+   
+   
+   
+    case
+   
+   Token::FOR:
+  
+ 
+ 
+  
+   
+   
+   
+   
+   stmt = ParseForStatement(labels, ok);
+   
+   
+   //For
+  
+  
+   循环语句
+  
+ 
+ 
+  
+   
+   
+   
+   
+   
+    break
+   
+   ;
+  
+ 
+ 
+  
+   
+   
+   
+    case
+   
+   Token::CONTINUE:
+  
+ 
+ 
+  
+   
+   
+   
+   
+   stmt = ParseContinueStatement(ok);
+   
+   
+   //Continue
+  
+  
+   语句
+  
+ 
+ 
+  
+   
+   
+   
+   
+   
+    break
+   
+   ;
+  
+ 
+ 
+  
+   
+   
+   
+    case
+   
+   Token::BREAK:
+  
+ 
+ 
+  
+   
+   
+   
+   
+   stmt = ParseBreakStatement(labels, ok);
+   
+   
+   //Break
+  
+  
+   语句
+  
+ 
+ 
+  
+   
+   
+   
+   
+   
+    break
+   
+   ;
+  
+ 
+ 
+  
+   
+   
+   
+    case
+   
+   Token::RETURN:
+  
+ 
+ 
+  
+   
+   
+   
+   
+   stmt = ParseReturnStatement(ok);
+   
+   
+   //
+  
+  
+   返回语句
+  
+ 
+ 
+  
+   
+   
+   
+   
+   
+    break
+   
+   ;
+  
+ 
+ 
+  
+   
+   
+   
+    case
+   
+   Token::WITH:
+  
+ 
+ 
+  
+   
+   
+   
+   
+   stmt = ParseWithStatement(labels, ok);
+   
+   
+   //With
+  
+  
+   语句
+   
+    ??
+   
+  
+ 
+ 
+  
+   
+   
+   
+   
+   
+    break
+   
+   ;
+  
+ 
+ 
+  
+   
+   
+   
+    case
+   
+   Token::SWITCH:
+  
+ 
+ 
+  
+   
+   
+   
+   
+   stmt = ParseSwitchStatement(labels, ok);
+   
+   
+   //Switch
+  
+  
+   语句
+  
+ 
+ 
+  
+   
+   
+   
+   
+   
+    break
+   
+   ;
+  
+ 
+ 
+  
+   
+   
+   
+    case
+   
+   Token::THROW:
+  
+ 
+ 
+  
+   
+   
+   
+   
+   stmt = ParseThrowStatement(ok);
+   
+   
+   //Throw
+  
+  
+   语句
+  
+ 
+ 
+  
+   
+   
+   
+   
+   
+    break
+   
+   ;
+  
+ 
+ 
+  
+   case
+  
+  
+   Token::TRY:
+  
+ 
+ 
+  
+   
+   
+   {
+  
+  
+   ……
+  
+  
+   }
+   
+   
+   //Try
+  
+  
+   语句
+  
+ 
+ 
+  
+   
+   
+   
+    case
+   
+   Token::FUNCTION:
+  
+ 
+ 
+  
+   
+   
+   
+   
+   
+    return
+   
+   ParseFunctionDeclaration(ok);
+   
+   
+   //
+  
+  
+   函数声明语句
+  
+ 
+ 
+  
+   
+   
+   
+    case
+   
+   Token::NATIVE:
+  
+ 
+ 
+  
+   
+   
+   
+   
+   
+    return
+   
+   ParseNativeDeclaration(ok);
+  
+ 
+ 
+  
+   
+   
+   
+    case
+   
+   Token::DEBUGGER:
+  
+ 
+ 
+  
+   
+   
+   
+   
+   stmt = ParseDebuggerStatement(ok);
+   
+   
+   //Debugger
+  
+  
+   语句
+  
+ 
+ 
+  
+   
+   
+   
+   
+   
+    break
+   
+   ;
+  
+ 
+ 
+  
+   default
+  
+  
+   : stmt = ParseExpressionOrLabelledStatement(labels, ok);//
+  
+  
+   其他语句
+   
+    (
+   
+   表达式
+   
+    /
+   
+   标号
+   
+    )
+   
+  
+ 
+ 
+  
+   }
+  
+ 
+ 
+  
+   
+    
+     (2)
+    
+   
+   
+    解析语句
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+    
+   
+   
+    首先
+   
+   
+    
+     ,
+    
+   
+   
+    调用扫描器
+   
+   
+    
+     Scanner(
+    
+   
+   
+    对
+   
+   
+    
+     JS
+    
+   
+   
+    源码进行词法分析
+   
+   
+    
+     ):
+    
+   
+   
+    每次扫描
+   
+   
+    
+     Scan()
+    
+   
+   
+    得到当前
+   
+   
+    
+     Token
+    
+   
+   
+    和下一个
+   
+   
+    
+     Token,
+    
+   
+   
+    把
+   
+   
+    
+     Token
+    
+   
+   
+    描述信息分别放入
+   
+   
+    
+     TokenDesc current_
+    
+   
+   
+    和
+   
+   
+    
+     TokenDesc next_
+    
+   
+   
+    中
+   
+   
+    
+     ,
+    
+   
+   
+    把
+   
+   
+    
+     Token
+    
+   
+   
+    的值放入缓冲
+   
+   
+    
+     source_
+    
+   
+   
+    中
+   
+   
+    
+     .
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+    
+   
+   
+    其次
+   
+   
+    
+     ,
+    
+   
+   
+    根据
+   
+   
+    
+     JS
+    
+   
+   
+    的语法语义进行相应
+   
+   
+    
+     (
+    
+   
+   
+    编译时
+   
+   
+    
+     )
+    
+   
+   
+    处理
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+    
+   
+   
+    最后
+   
+   
+    
+     ,
+    
+   
+  
+ 
+ 
+  
+   
+    
+     -1-
+    
+   
+   
+    一般
+   
+   
+    
+     (
+    
+   
+   
+    非声明
+   
+   
+    
+     )
+    
+   
+   
+    语句
+   
+   
+    
+     :
+    
+   
+   
+    创建
+   
+   
+    
+     Statement
+    
+   
+   
+    对象
+   
+   
+    
+     ,
+    
+   
+   
+    放入
+   
+   
+    
+     FunctionLiteral
+    
+   
+   
+    对象中
+   
+   
+    
+     ZoneList
+    
+    
+     <Statement*>;.
+    
+   
+  
+ 
+ 
+  
+   
+    
+     -2-
+    
+   
+   
+    变量声明语句
+   
+   
+    
+     :
+    
+   
+   
+    创建
+   
+   
+    
+     Declaration
+    
+   
+   
+    对象
+   
+   
+    放入
+   
+   
+    当前抽象语法树
+   
+   
+    
+     FunctionLiteral
+    
+   
+   
+    的
+   
+   
+    
+     Scope
+    
+   
+   
+    的
+   
+   
+    
+     decls_,
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     
+     
+     
+     
+    
+   
+   
+    再由
+   
+   
+    
+     CallRuntime
+    
+   
+   
+    语句创建
+   
+   
+    
+     ExpressionStatement
+    
+   
+   
+    对象
+   
+   
+    
+     ,
+    
+   
+   
+    放入
+   
+   
+    
+     body_ (JS
+    
+   
+   
+    语句
+   
+   
+    
+     
+     
+     
+     
+     
+     
+    
+   
+   
+    数组
+   
+   
+    
+     )
+    
+   
+  
+ 
+ 
+  
+   
+    
+     -3-
+    
+   
+   
+    函数声明语句
+   
+   
+    
+     :
+    
+   
+   
+    根据函数体创建新的抽象语法树
+   
+   
+    
+     FunctionLiteral
+    
+    
+     ,
+    
+   
+   
+    放入新创建的
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     
+     
+     
+      Declaration
+     
+    
+   
+   
+    对象
+   
+   
+    
+     ,
+    
+   
+   
+    再放入当前抽象语法树
+   
+   
+    
+     FunctionLiteral
+    
+   
+   
+    的
+   
+   
+    
+     Scope
+    
+   
+   
+    的
+   
+   
+    
+     
+     
+     decls_.
+    
+   
+  
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   
+    解析完所有语句后
+   
+   
+    
+     ,
+    
+   
+   
+    得到抽象语法树
+   
+   
+    
+     FunctionLiteral
+    
+   
+   
+    。
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+    
+   
+  
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   
+   
+  
+ 
+ 
+  
+   
+    附
+   
+   
+    
+     :
+    
+   
+  
+ 
+ 
+  
+   
+    抽象语法树
+   
+   
+    
+     4
+    
+   
+   
+    种结点
+   
+   
+    
+     :Statement(
+    
+   
+   
+    语句
+   
+   
+    
+     ),Expression(
+    
+   
+   
+    表达式
+   
+   
+    
+     ),Declaration(
+    
+   
+   
+    声明
+   
+   
+    
+     )
+    
+   
+   
+    和
+   
+   
+    
+     TargetCollector
+    
+   
+  
+ 
+ 
+  
+   
+    ---------------------------------------------------------------------------------------------------------------------------------
+   
+  
+ 
+ 
+  
+   
+    抽象语法树
+   
+   
+    
+     FunctionLiteral
+    
+   
+   
+    结构
+   
+  
+ 
+ 
+  
+   
+    
+     1.ZoneList<Statement*>; body_
+     
+     
+     JS
+    
+   
+   
+    语句数组
+   
+  
+ 
+ 
+  
+   
+    
+     2.Scope* scope_
+     
+     
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     (1)ZoneList<Declaration*>; decls_
+    
+   
+   
+    变量、函数声明数组
+   
+   
+    
+     (Declaration
+    
+   
+   
+    对象数组
+   
+   
+    
+     )
+    
+   
+  
+ 
+ 
+  
+   
+    
+     
+     
+     (2)……….
+    
+   
+  
+ 
+ 
+  
+   
+    
+     3.……
+    
+   
+  
+ 
+ 
+  
+   
+    ---------------------------------------------------------------------------------------------------------------------------------
+   
+  
+ 
+ 
+  
+   
+    抽象语法树
+   
+   
+    
+     FunctionLiteral
+    
+   
+   
+    结点的继承层次
+   
+  
+ 
+ 
+  
+   
+    
+     ZoneObject
+     
+     
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     AstNode
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     Statement
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     BreakableStatement
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     Block
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     IterationStatement
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     DoWhileStatement
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     WhileStatement
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     ForStatement
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     ForInstatement
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     SwitchStatement
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     ExpressionStatement
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     ContinueStatement
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     BreakStatement
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     ReturnStatement
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     WithEnterStatement
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     WithExitStatement
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     IfStatement
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     TryStatement
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     TryCatchStatement
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     TryFinallyStatement
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     DebuggerStatement
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     EmptyStatement
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     Expression (
+    
+   
+   
+    会被转化为
+   
+   
+    
+     ExpressionStatement)
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     ValidLeftHandSideSentinel
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     Literal
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     MaterializedLiteral
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     ObjectLiteral
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     RegExpLiteral
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     ArrayLiteral
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     CatchExtensionObject
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     VariableProxy
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     VariableProxySentinel
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     Slot
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     Property
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     Call
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     CallNew
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     CallRuntime
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     UnaryOperation
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     BinaryOperation
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     CountOperation
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     CompareOperation
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     Conditional
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     Assignment
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     Throw
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     FunctionLiteral
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     ShareFunctionInfoLiteral
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     |
+     
+     
+     ThisFunction
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     Declaration
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     |
+     
+     
+     TargetCollector
+    
+   
+  
+ 
+ 
+  
+   
+    
+     |
+     
+     
+     CaseClause
+    
+   
+  
+ 
+
+

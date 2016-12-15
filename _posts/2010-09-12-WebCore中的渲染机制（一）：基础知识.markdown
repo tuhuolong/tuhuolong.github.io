@@ -1,0 +1,274 @@
+---
+layout: post
+title: "WebCore中的渲染机制（一）：基础知识"
+date: 2010-09-12 14:36:00 
+comments: true
+categories: [文档]
+tags: [文档]
+description: "WebCore中的渲染机制（一）：基础知识"
+keywords: 文档
+---
+
+
+ 
+  DOM树
+  
+  web页面解析后形成节点树，称作文档对象模型（简称DOM），树上所有节点的基类是Node。
+ 
+ 
+  Node.h
+ 
+ 
+  节点分为几类，与渲染代码相关的节点类型有：
+ 
+ 
+  Document - 树的根节点总是Document，WebCore中有三个文档类: Document, HTMLDocument和SVGDocument。Document用于除了SVG文档之外的所有XML文档。HTMLDocument继承自Document，仅适用于HTML文档。SVGDocument也是继承自Document，适用于SVG文档。 Document.h
+  
+  HTMLDocument.h
+  
+  Element - HTML和XML源代码中出现的所有标记都是元素(elements)。从渲染的角度看，元素就是一个节点，它具有标记名并可以转化（cast）成一个能查询渲染所需数据的子类。 Element.h
+  
+  Text - 元素之间出现的原始文本(raw text)就是文本节点。Text节点存储原始文本(raw text)，渲染树能够查询节点，获得字符串数据。 Text.h
+  
+  渲染树
+  
+  渲染的核心是渲染树。渲染树非常类似于DOM，树中的每个对象都对应着文档、元素或文本节点。渲染树也可以包含没有对应DOM节点的对象。
+ 
+ 
+  所有渲染树节点的基类是RenderObject。
+ 
+ 
+  RenderObject.h
+ 
+ 
+  DOM节点对应的RenderObject可以使用Node类的Renderer方法获得：
+ 
+ 
+  RenderObject* renderer() const
+ 
+ 
+  下列方法通常用来遍历渲染树：
+ 
+ 
+  RenderObject* firstChild() const;
+  
+  RenderObject* lastChild() const;
+  
+  RenderObject* previousSibling() const;
+  
+  RenderObject* nextSibling() const;
+  
+  RenderObject* firstChild() const;
+  
+  RenderObject* lastChild() const;
+  
+  RenderObject* previousSibling() const;
+  
+  RenderObject* nextSibling() const;
+ 
+ 
+  这里的示例展示了如何遍历渲染对象的子节点，这是渲染代码中最常见的遍历方式：
+ 
+ 
+  for (RenderObject* child = firstChild(); child; child = child->;nextSibling()) {
+  
+  ...
+  
+  }
+  
+  for (RenderObject* child = firstChild(); child; child = child->;nextSibling()) {
+  
+  ...
+  
+  }
+ 
+ 
+  创建渲染树
+  
+  渲染对象(renderer)通过DOM创建，这一过程称为附着(attachment)。当文档解析，DOM节点添加时，DOM节点的attach方法被调用来创建渲染对象(renderer)。
+ 
+ 
+  void attach()
+ 
+ 
+  attach方法获得DOM节点的样式信息，如果元素的display CSS属性为none或者节点是具有display:none集合的元素的后代，将不创建任何渲染对象(renderer)。节点的子类和CSS display属性值一起决定为该节点创建什么样的渲染对象(renderer)。
+ 
+ 
+  附着(attach)是一个自顶向下的递归操作，父亲节点总是在子孙节点之前创建他们对应的渲染对象(renderer)。
+ 
+ 
+  销毁渲染树
+  
+  当DOM节点从文档移除时，或者在文档关闭时（比如标签页/窗口关闭时），渲染对象(renderer)被销毁。DOM节点的detach方法被调用来断开并销毁渲染对象(renderer)。
+ 
+ 
+  void detach()
+ 
+ 
+  分离(detachment)是一个自底向上的递归操作。子孙节点总是在父亲节点之前销毁对应的渲染对象(renderer)。
+ 
+ 
+  存取样式信息
+  
+  附着(attachment)过程中，DOM查询CSS获得元素的样式信息，结果存放在RenderStyle对象中。
+ 
+ 
+  RenderStyle.h
+ 
+ 
+  webkit所支持的每个单独CSS属性都可以通过该对象查询到。RenderStyle是一个引用计数对象。如果DOM创建了一个渲染对象(renderer)，它通过渲染对象(renderer)的setStyle方法关联样式信息到渲染对象(renderer)。
+ 
+ 
+  void setStyle(RenderStyle*)
+ 
+ 
+  渲染对象(renderer)将在Style上增加一个引用，并一直维持着直到得到新的样式或者被销毁。
+ 
+ 
+  RenderStyle可以使用style()方法从渲染对象(renderer)获得。
+ 
+ 
+  RenderStyle* style() const
+ 
+ 
+  CSS盒子模型(The CSS Box Model)
+  
+  RenderObject的基本子类之一就是RenderBox，该类表示遵从CSS盒子模型的对象，它们包括具有边框、填充(padding)、边距、宽度和高度的任何对象。现在有些对象并没有符合CSS盒子模型（比如SVG对象）但仍然从RenderBox派生，这实际上是一个错误，将在以后进行渲染树重构时修复。
+ 
+ 
+  CSS 2.1规格的示意图说明了CSS盒子的各部分，下列方法可用来获得边框/边距/填充的宽度。除非是查看原始的样式信息，否则RenderStyle不应该使用，因为最终RenderObject得到的计算值会有很大不同（特别是表格，可以覆盖单元格的填充，单元格之间也可以有展开的边框）
+ 
+ 
+  int marginTop() const;
+  
+  int marginBottom() const;
+  
+  int marginLeft() const;
+  
+  int marginRight() const;
+  
+  int paddingTop() const;
+  
+  int paddingBottom() const;
+  
+  int paddingLeft() const;
+  
+  int paddingRight() const;
+  
+  int borderTop() const;
+  
+  int borderBottom() const;
+  
+  int borderLeft() const;
+  
+  int borderRight() const;
+  
+  int marginTop() const;
+  
+  int marginBottom() const;
+  
+  int marginLeft() const;
+  
+  int marginRight() const;
+  
+  int paddingTop() const;
+  
+  int paddingBottom() const;
+  
+  int paddingLeft() const;
+  
+  int paddingRight() const;
+  
+  int borderTop() const;
+  
+  int borderBottom() const;
+  
+  int borderLeft() const;
+  
+  int borderRight() const;
+ 
+ 
+  width()和height()方法获得包括边界在内的盒子宽度和高度。
+ 
+ 
+  int width() const;
+  
+  int height() const;
+  
+  int width() const;
+  
+  int height() const;
+ 
+ 
+  客户盒子(client box)是盒子(box)除边框和滚动条之外但包括填充在内的区域。
+ 
+ 
+  int clientLeft() const { return borderLeft(); }
+  
+  int clientTop() const { return borderTop(); }
+  
+  int clientWidth() const;
+  
+  int clientHeight() const;
+  
+  int clientLeft() const { return borderLeft(); }
+  
+  int clientTop() const { return borderTop(); }
+  
+  int clientWidth() const;
+  
+  int clientHeight() const;
+ 
+ 
+  内容盒子(content box)用来表示CSS盒子除边框和填充之外的区域。
+ 
+ 
+  IntRect contentBox() const;
+  
+  int contentWidth() const { return clientWidth() - paddingLeft() - paddingRight(); }
+  
+  int contentHeight() const { return clientHeight() - paddingTop() - paddingBottom(); }
+  
+  IntRect contentBox() const;
+  
+  int contentWidth() const { return clientWidth() - paddingLeft() - paddingRight(); }
+  
+  int contentHeight() const { return clientHeight() - paddingTop() - paddingBottom(); }
+ 
+ 
+  当盒子有垂直或这水平滚动条时，它们放在填充和边框之间，滚动条的宽度和高度包括在client宽度和client高度中。滚动条不是内容盒子(content box)的组成部分。可滚动区域的尺寸和当前滚动的位置都可以从RenderObject获得。我将在关于滚动的另一章节详细阐述。
+ 
+ 
+  int scrollLeft() const;
+  
+  int scrollTop() const;
+  
+  int scrollWidth() const;
+  
+  int scrollHeight() const;
+  
+  int scrollLeft() const;
+  
+  int scrollTop() const;
+  
+  int scrollWidth() const;
+  
+  int scrollHeight() const;
+ 
+ 
+  盒子(box)还有x和y位置，这些位置都是相对于祖先节点的，它们负责决定盒子(box)放在何处。但存在一些例外，这也是渲染树让人难以理解的领域之一。
+ 
+ 
+  int xPos() const;
+  
+  int yPos() const;
+ 
+ 
+  
+  本文来自CSDN博客，转载请标明出处：
+  
+   http://blog.csdn.net/keensword007/archive/2010/08/30/5849899.aspx
+  
+ 
+
+
