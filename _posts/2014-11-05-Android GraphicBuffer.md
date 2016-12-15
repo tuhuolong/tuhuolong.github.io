@@ -1,11 +1,26 @@
 ---
 layout: post
-title: Android GraphicBuffer
-date: 2014-11-05 01:15:00
-categories: [Android]
+title: "Android GraphicBuffer"
+date: 2014-11-05 01:15:00 
+comments: true
+categories: []
 tags: []
+description: "Android GraphicBuffer"
+keywords: 
 ---
-![](http://img.blog.csdn.net/20141105011447452)   
 
-   
-    
+
+ 
+  
+  
+ 
+ 
+  
+  
+ 
+ 
+ 
+ 
+ 
+
+

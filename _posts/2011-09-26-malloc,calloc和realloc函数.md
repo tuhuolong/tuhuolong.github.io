@@ -1,10 +1,31 @@
 ---
 layout: post
-title: malloc,calloc和realloc函数
-date: 2011-09-26 11:16:00
-categories: [C++, 内存管理]
+title: "malloc,calloc和realloc函数"
+date: 2011-09-26 11:16:00 
+comments: true
+categories: []
 tags: []
+description: "malloc,calloc和realloc函数"
+keywords: 
 ---
-malloc:分配内存,不初始化
-calloc:**清零分配**,初始化为0
-realloc:**重新分配,**不初始化
+
+
+ 
+  malloc:分配内存,不初始化
+ 
+ 
+  calloc:
+  
+   清零分配
+  
+  ,初始化为0
+ 
+ 
+  realloc:
+  
+   重新分配,
+  
+  不初始化
+ 
+
+

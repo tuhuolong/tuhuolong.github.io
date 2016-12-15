@@ -1,8 +1,17 @@
 ---
 layout: post
-title: Android NDK
-date: 2010-11-12 17:16:00
-categories: [Android]
-tags: [android, 工具]
+title: "Android NDK"
+date: 2010-11-12 17:16:00 
+comments: true
+categories: [android]
+tags: [android]
+description: "Android NDK"
+keywords: android
 ---
-Android NDK :  工具+本地库
+
+
+ 
+  Android NDK :  工具+本地库
+ 
+
+

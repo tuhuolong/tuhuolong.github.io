@@ -1,8 +1,20 @@
 ---
 layout: post
-title: adb architecture
-date: 2015-05-03 17:01:00
-categories: [Android]
+title: "adb architecture"
+date: 2015-05-03 17:01:00 
+comments: true
+categories: []
 tags: []
+description: "adb architecture"
+keywords: 
 ---
-![](http://img.blog.csdn.net/20150505013314919)
+
+
+ 
+  
+   
+   
+  
+ 
+
+
